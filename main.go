@@ -14,17 +14,14 @@ func main() {
     mux.HandleFunc("/", indexHandler)
     mux.Handle("/static/css/", http.StripPrefix("/static/css/", cssHandler{}))
 
-    // Récupère le port attribué par Render
     port := os.Getenv("PORT")
     if port == "" {
-        port = "10000" // pour test local
+        port = "10000" // test local
     }
     addr := ":" + port
 
-    log.Printf("Serving site (HTML & CSS only) at http://localhost%s", addr)
-    if err := http.ListenAndServe(addr, mux); err != nil {
-        log.Fatal(err)
-    }
+    log.Printf("Serving site at http://localhost%s", addr)
+    log.Fatal(http.ListenAndServe(addr, mux))
 }
 
 func indexHandler(w http.ResponseWriter, r *http.Request) {
