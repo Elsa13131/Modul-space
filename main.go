@@ -11,9 +11,13 @@ import (
 func main() {
     mux := http.NewServeMux()
 
+    // Serve index.html
     mux.HandleFunc("/", indexHandler)
+
+    // Serve CSS files
     mux.Handle("/static/css/", http.StripPrefix("/static/css/", cssHandler{}))
 
+    // Port fourni par Render
     port := os.Getenv("PORT")
     if port == "" {
         port = "10000" // test local
