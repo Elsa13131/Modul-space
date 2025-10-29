@@ -1,27 +1,41 @@
-# Base de site — Modul-space
+# Modul-space — déploiement
 
-Ceci est une base minimale pour un site statique (strictement HTML + CSS).
+Ce dépôt contient un petit serveur Go qui sert `index.html` et le dossier `static/`.
 
-Structure actuelle :
+Objectif : préparer et déployer rapidement ce site sur une plateforme qui fournit une URL publique (ex : Render, Railway).
 
-- `index.html` — point d'entrée (HTML)
-- `static/css/style.css` — styles de base (CSS)
-- `main.go` — petit serveur Go qui ne sert que HTML et CSS
+Pré-requis
+- Un compte GitHub
+- Avoir poussé ce dépôt sur un repo GitHub
+- Avoir Go installé localement pour tests (optionnel)
 
-Comment lancer localement (Go)
+Options de déploiement recommandées
 
-1) Depuis la racine du projet, lancer le serveur :
+1) Render (recommandé)
+ - Aller sur https://render.com et créer un "Web Service" en connectant votre repo GitHub.
+ - Build Command: `go build -o main .`
+ - Start Command: `./main`
+ - Render détectera et lancera le service. Une URL publique du type `https://votre-service.onrender.com` sera fournie automatiquement après le déploiement.
 
-```powershell
-go run main.go
-```
+2) Railway
+ - Aller sur https://railway.app, créer un nouveau projet et connecter le repo GitHub.
+ - Définir la commande de démarrage: `./main` (ou `go run main.go` pour exécuter sans construire).
+ - Railway vous fournira aussi une URL publique.
 
-2) Ouvrir http://localhost:8080 dans le navigateur.
+3) Déploiement manuel (exécuter localement)
+ - Build : `go build -o main .`
+ - Lancer : `.\main.exe` (Windows) ou `./main` (Linux/macOS)
+ - Le serveur écoute sur le port fourni par la variable d'environnement `PORT`. Si non fournie, il écoute sur le port `8080`.
 
-Comportement du serveur Go
+Que faire après le déploiement ?
+- L'interface de la plateforme (Render/Railway) affichera l'URL publique. Copiez-la et ouvrez-la dans votre navigateur.
 
-- Sert `index.html` sur `/` ou `/index.html`.
-- Sert uniquement les fichiers `*.css` situés dans `static/css/` via l'URL `/static/css/<name>.css`.
-- Toute autre requête (JS, images, fichiers binaires, accès hors dossier) renvoie `403` ou `404`.
+Dépannage rapide
+- Si la page retourne 404 pour des fichiers statiques : vérifiez que `static/` est bien dans la racine du repo et que les chemins dans `index.html` commencent par `/static/`.
+- Vérifiez les logs du service sur Render/Railway pour voir les erreurs de build ou d'exécution.
 
-Si tu veux que je génère automatiquement une page supplémentaire ou organise les pages (ex : `pages/`), je peux le faire, mais j'ai laissé la structure minimale telle que demandée (HTML + CSS seulement).
+Notes techniques
+- L'application lit `PORT` depuis l'environnement (convention PaaS). Le serveur lie `0.0.0.0` pour être accessible publiquement.
+- Un `Procfile` est inclus pour faciliter le déploiement sur des plateformes compatibles.
+
+Si tu veux, je peux te donner les étapes précises pour connecter le repo GitHub à Render et te montrer l'URL une fois déployé — mais je ne peux pas déployer à ta place sans accès au compte.
