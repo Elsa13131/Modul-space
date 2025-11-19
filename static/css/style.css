@@ -6,9 +6,22 @@
 }
 html,body{height:100%;margin:0;font-family:Segoe UI, Roboto, Arial, sans-serif;background:var(--bg);color:var(--text)}
 .container{max-width:1000px;margin:0 auto;padding:1rem}
-.site-header{background:#fcd47e;border-bottom:1px solid #f3df6b}
-.site-header .container{display:flex;align-items:center;justify-content:space-between}
-.site-header h1{font-size:1.125rem;margin:0}
+.site-header{background:#fcd47e;border-bottom:1px solid #f3df6b;padding:3.5rem 0}
+.site-header .container{display:flex;align-items:flex-start;justify-content:space-between;gap:1rem}
+.site-header h1{font-size:1.125rem;margin:0;margin-top:0.6rem}
+
+/* Logo en haut à gauche de la bannière — taille fortement augmentée */
+.site-logo{height:350px;max-height:350px;width:auto;object-fit:contain;display:block;margin-right:1rem}
+
+/* Responsive: réduire fortement le logo sur petits écrans */
+@media (max-width:900px){
+  .site-logo{height:180px;max-height:180px}
+  .site-header{padding:2rem 0}
+}
+@media (max-width:600px){
+  .site-logo{height:96px;max-height:96px}
+  .site-header{padding:1rem 0}
+}
 .site-header nav ul{list-style:none;margin:0;padding:0;display:flex;gap:1rem}
 .site-header a{text-decoration:none;color:var(--text)}
 #hero{padding:3rem;background:linear-gradient(90deg,rgba(43,124,255,0.06),transparent);border-radius:8px}

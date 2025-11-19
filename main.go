@@ -23,6 +23,10 @@ func main() {
     fs := http.FileServer(http.Dir("static"))
     mux.Handle("/static/", http.StripPrefix("/static/", fs))
 
+    // Serve everything under ./img at /img/ so images in project root are accessible
+    imgFs := http.FileServer(http.Dir("img"))
+    mux.Handle("/img/", http.StripPrefix("/img/", imgFs))
+
     // Simple request logging
     handler := loggingMiddleware(mux)
 
