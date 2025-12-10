@@ -65,7 +65,7 @@ header.site-header .container {
 /* Welcome text on the left */
 .header-welcome {
     position: absolute;
-    left: -24rem;
+    left: -12rem;
     color: var(--text-dark);
     font-size: 2.5rem;
     font-weight: 400;
