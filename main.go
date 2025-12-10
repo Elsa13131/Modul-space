@@ -27,8 +27,12 @@ func main() {
     imgFs := http.FileServer(http.Dir("img"))
     mux.Handle("/img/", http.StripPrefix("/img/", imgFs))
 
-    // Simple request logging
-    handler := loggingMiddleware(mux)
+    // Serve fonts from ./fonts at /fonts/
+    fontsFs := http.FileServer(http.Dir("fonts"))
+    mux.Handle("/fonts/", http.StripPrefix("/fonts/", fontsFs))
+
+    // No request logging: use mux directly so individual requests are not printed
+    handler := mux
 
     // Port from env (Render/Railway) or fallback to 8080 for local dev
     port := os.Getenv("PORT")
@@ -47,7 +51,8 @@ func main() {
     signal.Notify(stop, syscall.SIGINT, syscall.SIGTERM)
 
     go func() {
-        log.Printf("Starting server on http://0.0.0.0%s (PORT=%s)", addr, port)
+        // Message demandé par l'utilisateur (affiche le port utilisé)
+        log.Printf("Serveur Modul-space démarré sur http://localhost:%s", port)
         if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
             log.Fatalf("server error: %v", err)
         }
