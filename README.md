@@ -39,3 +39,30 @@ Notes techniques
 - Un `Procfile` est inclus pour faciliter le déploiement sur des plateformes compatibles.
 
 Si tu veux, je peux te donner les étapes précises pour connecter le repo GitHub à Render et te montrer l'URL une fois déployé — mais je ne peux pas déployer à ta place sans accès au compte.
+
+Ajouter ton image fournie (logo) dans le projet
+------------------------------------------------
+
+Pour que l'image que tu as jointe dans la conversation apparaisse dans la barre d'info en haut à droite, fais ceci :
+
+1. Sauvegarde l'image fournie (clic droit -> "Enregistrer l'image sous...") en lui donnant le nom exact :
+
+	static/img/info-logo.png
+
+	(crée le dossier `static/img` s'il n'existe pas)
+
+2. Vérifie que `index.html` contient bien la balise suivante (déjà en place) :
+
+	<img src="/static/img/info-logo.png" alt="Logo info" id="infoLogo">
+
+3. Commit et pousse les changements sur GitHub :
+
+```powershell
+git add static/img/info-logo.png
+git commit -m "Ajout du logo info pour la barre supérieure"
+git push origin main
+```
+
+4. Si ton site est déjà déployé (Render/Railway), le déploiement automatique prendra la nouvelle image et ton site en ligne affichera le logo.
+
+Remarque : si tu préfères que j'ajoute l'image directement dans le dépôt, copie-colle ici l'image en base64 (je peux alors la déposer au bon endroit), ou autorise l'accès à un URL public où je peux la télécharger.

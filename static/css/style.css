@@ -1,15 +1,143 @@
+/* ================================ */
 /* Style minimal pour la base du site */
-:root{
-  --bg:#f7f8fa;
-  --text:#222;
-  --accent:#2b7cff;
+/* ================================ */
+:root {
+    --bg: #92AD96; /* site background */
+    --header: #92AD96; /* top banner */
+    --subbanner: #6161AB; /* secondary banner */
+    --text-light: #ffffff;
+    --text-dark: #222222;
 }
-html,body{height:100%;margin:0;font-family:Segoe UI, Roboto, Arial, sans-serif;background:var(--bg);color:var(--text)}
-.container{max-width:1000px;margin:0 auto;padding:1rem}
-.site-header{background:#fff;border-bottom:1px solid #e6e9ef}
-.site-header .container{display:flex;align-items:center;justify-content:space-between}
-.site-header h1{font-size:1.125rem;margin:0}
-.site-header nav ul{list-style:none;margin:0;padding:0;display:flex;gap:1rem}
-.site-header a{text-decoration:none;color:var(--text)}
-#hero{padding:3rem;background:linear-gradient(90deg,rgba(43,124,255,0.06),transparent);border-radius:8px}
-.site-footer{padding:1rem 0;text-align:center;color:#666}
+
+/* Metropolis font (served from /fonts/) */
+@font-face {
+    font-family: 'Metropolis';
+    src: url('/fonts/Metropolis-Thin.woff2') format('woff2'),
+             url('/fonts/Metropolis-Thin.woff') format('woff');
+    font-weight: 100 900;
+    font-style: normal;
+    font-display: swap;
+}
+
+/* Siberian font (served from /fonts/) */
+@font-face {
+    font-family: 'Siberian';
+    src: url('/fonts/Siberian.woff') format('woff');
+    font-weight: 400;
+    font-style: normal;
+    font-display: swap;
+}
+
+/* Global base: use system fonts by default */
+html, body {
+    height: 100%;
+    margin: 0;
+    font-family: "Segoe UI", Roboto, Arial, sans-serif;
+    background: var(--bg);
+    color: var(--text-dark);
+}
+
+.container {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 1rem;
+}
+
+/* Top banner */
+header.site-header {
+    background: var(--header);
+    /* bring logo as low as possible */
+    padding-top: 0.50rem;
+    padding-bottom: 2.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+header.site-header .container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    width: 100%;
+}
+
+/* Welcome text on the left */
+.header-welcome {
+    position: absolute;
+    left: -24rem;
+    color: var(--text-dark);
+    font-size: 2.5rem;
+    font-weight: 400;
+    font-family: 'Siberian', sans-serif, "Segoe UI";
+    margin-top: 7rem;
+
+}
+
+/* Larger logo sizes as requested */
+header.site-header img { 
+    height: 140px; 
+    width: auto; 
+    object-fit: contain; 
+    /* Agrandir visuellement sans affecter le flux/layout -> préserve l'espace entre le haut et la bannière bleue */
+    transform-origin: center;
+    transform: scale(1.20);
+    transition: transform 180ms ease;
+    will-change: transform;
+}
+
+/* Secondary banner (navigation) */
+.sub-banner {
+    background: var(--subbanner);
+    color: var(--text-light);
+    /* increase blue band thickness: thicker on desktop, slightly smaller on tablet/mobile via media queries */
+    padding: 1.5rem 0rem;
+}
+.sub-banner .container { display:flex; justify-content:center; }
+/* remove extra internal container padding inside banners to keep them tight */
+header.site-header .container,
+.sub-banner .container { padding-top: 0; padding-bottom: 0; }
+.sub-banner nav ul { list-style:none; margin:0; padding:0; display:flex; gap:2rem }
+.sub-banner nav a {
+    color: var(--text-light);
+    text-decoration: none;
+    /* use Siberian for the blue banner links (fallback to system fonts) */
+    font-family: 'Siberian', "Segoe UI", Roboto, Arial, sans-serif;
+    text-transform: uppercase;
+    /* remove bold and increase size for stronger visual impact */
+    font-weight: 400;
+    font-size: 1.6rem; /* desktop */
+    letter-spacing: 0.06em;
+}
+
+/* Collapse the visual gap between header and sub-banner */
+/* collapse the gap on desktop/tablet and slightly less on mobile */
+header.site-header + .sub-banner { margin-top: -28px; }
+@media (max-width:900px) {
+    header.site-header + .sub-banner { margin-top: -20px; }
+}
+@media (max-width:600px) {
+    header.site-header + .sub-banner { margin-top: -10px; }
+}
+
+/* Main content */
+main.container { padding:2rem 1rem; }
+#hero { background: transparent; padding:2rem; color:var(--text-dark); }
+
+/* Footer */
+.site-footer { padding:1rem 0; text-align:center; color:#333; }
+
+/* Responsive tweaks */
+@media (max-width:900px) {
+    header.site-header img{height:150px}
+    .sub-banner { padding: 2.0rem 0; }
+    /* tablet: slightly smaller but still large */
+    .sub-banner nav a{font-size:1.25rem}
+}
+@media (max-width:600px) {
+    header.site-header img{height:100px}
+    .sub-banner { padding: 1.4rem 0; }
+    .sub-banner nav{padding:0.5rem 0}
+    /* mobile: readable but not oversized */
+    .sub-banner nav a{font-size:1.05rem}
+}
