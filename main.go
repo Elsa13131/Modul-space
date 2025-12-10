@@ -23,8 +23,8 @@ func main() {
     fs := http.FileServer(http.Dir("static"))
     mux.Handle("/static/", http.StripPrefix("/static/", fs))
 
-    // Serve everything under ./img at /img/ so images in project root are accessible
-    imgFs := http.FileServer(http.Dir("img"))
+    // Serve images from ./static/img at /img/
+    imgFs := http.FileServer(http.Dir("static/img"))
     mux.Handle("/img/", http.StripPrefix("/img/", imgFs))
 
     // Serve fonts from ./fonts at /fonts/

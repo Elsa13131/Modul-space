@@ -127,6 +127,77 @@ main.container { padding:2rem 1rem; }
 /* Footer */
 .site-footer { padding:1rem 0; text-align:center; color:#333; }
 
+/* Carousel styles */
+#carousel-section {
+    padding: 2rem 0;
+    text-align: center;
+}
+
+.carousel-container {
+    position: relative;
+    max-width: 1200px;
+    margin: 0 -6rem -4rem -6rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1.5rem;
+}
+
+.carousel-viewport {
+    flex: 1;
+    overflow: hidden;
+    border-radius: 8px;
+    background: #f0f0f0;
+}
+
+.carousel-track {
+    display: flex;
+    transition: transform 0.4s ease-in-out;
+    gap: 1rem;
+    padding: 0.5rem;
+}
+
+.carousel-item {
+    flex: 0 0 calc(33.333% - 0.67rem);
+    height: 300px;
+    object-fit: cover;
+    border-radius: 4px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.carousel-btn {
+    background-color: var(--subbanner);
+    color: var(--text-light);
+    border: none;
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    font-size: 2rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+    flex-shrink: 0;
+}
+
+.carousel-btn:hover {
+    background-color: #4a4a8a;
+    transform: scale(1.1);
+}
+
+.carousel-btn:active {
+    transform: scale(0.95);
+}
+
+.carousel-btn-prev {
+    order: -1;
+}
+
+.carousel-btn-next {
+    order: 1;
+}
+
 /* Responsive tweaks */
 @media (max-width:900px) {
     header.site-header img{height:150px}
