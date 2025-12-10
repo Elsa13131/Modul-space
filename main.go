@@ -72,7 +72,7 @@ func indexHandler(w http.ResponseWriter, r *http.Request) {
     p := r.URL.Path
     // Serve root or index.html explicitly
     if p == "/" || p == "" || p == "/index.html" {
-        http.ServeFile(w, r, "index.html")
+        http.ServeFile(w, r, "templates/index.html")
         return
     }
 
@@ -91,8 +91,16 @@ func indexHandler(w http.ResponseWriter, r *http.Request) {
         return
     }
 
+    // Try to serve .html files from templates (e.g., /apropos.html, /produit.html)
+    if strings.HasSuffix(p, ".html") {
+        name := filepath.Clean(strings.TrimPrefix(p, "/"))
+        filePath := filepath.Join("templates", name)
+        http.ServeFile(w, r, filePath)
+        return
+    }
+
     // Fallback: return index.html (useful for SPA routing)
-    http.ServeFile(w, r, "index.html")
+    http.ServeFile(w, r, "templates/index.html")
 }
 
 func loggingMiddleware(next http.Handler) http.Handler {
