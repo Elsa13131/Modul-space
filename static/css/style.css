@@ -5,6 +5,8 @@
     --bg: #92AD96; /* site background */
     --header: #92AD96; /* top banner */
     --subbanner: #6161AB; /* secondary banner */
+    --subbanner2: #4A4A7A; /* alternative secondary banner */
+    --sidebar-bg: #6161AB; /* fond sidebar bleu */
     --text-light: #ffffff;
     --text-dark: #222222;
 }
@@ -65,13 +67,12 @@ header.site-header .container {
 /* Welcome text on the left */
 .header-welcome {
     position: absolute;
-    left: -24rem;
+    left: -12rem;
     color: var(--text-dark);
     font-size: 2.5rem;
     font-weight: 400;
     font-family: 'Siberian', sans-serif, "Segoe UI";
     margin-top: 7rem;
-
 }
 
 /* Larger logo sizes as requested */
@@ -110,6 +111,67 @@ header.site-header .container,
     letter-spacing: 0.06em;
 }
 
+/* Deuxième bannière (subbanner2) */
+.subbanner2 {
+    background: #4A4A7A;
+    color: #ffffff;
+    padding: 3rem 0;
+    min-height: 280px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.subbanner2 .container {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    padding: 1rem;
+}
+
+.subbanner2 .feature-row {
+    display: flex;
+    justify-content: center;
+    gap: 3rem;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.subbanner2 .feature {
+    text-align: center;
+    color: #ffffff;
+    font-family: "Siberian", "Segoe UI", Roboto, Arial, sans-serif;
+    font-size: 1.1rem;
+    letter-spacing: 0.06em;
+}
+
+.subbanner2 .feature-circle {
+    width: 250px;
+    height: 250px;
+    border-radius: 50%;
+    border: 5px solid #1e3a8a;
+    background: #e8f0ea;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 0.8rem auto;
+    overflow: hidden;
+}
+
+.subbanner2 .feature-circle img {
+    width: 60%;
+    height: 60%;
+    object-fit: contain;
+}
+
+.subbanner2 .feature p {
+    margin-top: 0.5rem;
+    font-size: 1.3rem;
+    color: #ffffff;
+    font-weight: 400;
+    letter-spacing: 0.05em;
+}
+
 /* Collapse the visual gap between header and sub-banner */
 /* collapse the gap on desktop/tablet and slightly less on mobile */
 header.site-header + .sub-banner { margin-top: -28px; }
@@ -120,9 +182,56 @@ header.site-header + .sub-banner { margin-top: -28px; }
     header.site-header + .sub-banner { margin-top: -10px; }
 }
 
-/* Main content */
-main.container { padding:2rem 1rem; }
-#hero { background: transparent; padding:2rem; color:var(--text-dark); }
+/* Main content avec gradient gauche->droite */
+main.main-with-sidebar {
+    background: linear-gradient(to right, var(--sidebar-bg) 0%, var(--sidebar-bg) 30%, var(--bg) 30%, var(--bg) 100%);
+    padding: 2rem 0;
+    margin: 0;
+    max-width: 100%;
+    min-height: 300px;
+}
+
+main.main-with-sidebar .container {
+    max-width: 1000px;
+    margin: 0 auto;
+}
+
+/* Wrapper pour contenu avec sidebar */
+.content-wrapper {
+    display: flex;
+    gap: 2rem;
+    align-items: flex-start;
+}
+
+/* Sidebar gauche sans fond (le fond vient du main) */
+.sidebar-left {
+    background: transparent;
+    padding: 2rem 1.5rem;
+    min-width: 250px;
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+    margin-left: 2rem;
+}
+
+.sidebar-item {
+    background: transparent;
+    border: 2px solid #ffffff;
+    color: #ffffff;
+    padding: 1rem 1.5rem;
+    text-align: center;
+    font-family: 'Siberian', "Segoe UI", Roboto, Arial, sans-serif;
+    font-size: 1.2rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+#hero {
+    flex: 1;
+    background: transparent;
+    padding: 2rem;
+    color: var(--text-dark);
+}
 
 /* Footer */
 .site-footer { padding:1rem 0; text-align:center; color:#333; }
@@ -133,6 +242,18 @@ main.container { padding:2rem 1rem; }
     .sub-banner { padding: 2.0rem 0; }
     /* tablet: slightly smaller but still large */
     .sub-banner nav a{font-size:1.25rem}
+}
+@media (max-width:768px) {
+    main.main-with-sidebar {
+        background: var(--sidebar-bg);
+    }
+    .content-wrapper {
+        flex-direction: column;
+    }
+    .sidebar-left {
+        width: 100%;
+        margin-left: 0;
+    }
 }
 @media (max-width:600px) {
     header.site-header img{height:100px}
