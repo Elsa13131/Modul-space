@@ -754,3 +754,299 @@ main.container {
         font-size: 1.1rem;
     }
 }
+
+/* ================================ */
+/* Modal de demande de devis */
+/* ================================ */
+.quote-modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.6);
+    z-index: 9999;
+    justify-content: center;
+    align-items: center;
+    animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+.quote-modal-content {
+    background: white;
+    padding: 2rem;
+    border-radius: 12px;
+    max-width: 500px;
+    width: 90%;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+    animation: slideUp 0.3s ease;
+}
+
+@keyframes slideUp {
+    from {
+        transform: translateY(30px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+.quote-modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+}
+
+.quote-modal-header h2 {
+    margin: 0;
+    font-size: 1.5rem;
+    color: var(--subbanner);
+}
+
+.quote-modal-close {
+    background: none;
+    border: none;
+    font-size: 2rem;
+    cursor: pointer;
+    color: #999;
+    padding: 0;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: color 0.2s;
+}
+
+.quote-modal-close:hover {
+    color: #333;
+}
+
+.quote-modal-body p {
+    margin-bottom: 1rem;
+    color: #666;
+}
+
+.quote-form-group {
+    margin-bottom: 1rem;
+}
+
+.quote-form-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 600;
+    color: var(--text-dark);
+}
+
+.quote-form-group input {
+    width: 100%;
+    padding: 0.75rem;
+    border: 2px solid #e0e0e0;
+    border-radius: 6px;
+    font-size: 1rem;
+    transition: border-color 0.2s;
+    box-sizing: border-box;
+}
+
+.quote-form-group input:focus {
+    outline: none;
+    border-color: var(--subbanner);
+}
+
+.quote-form-required {
+    color: #d32f2f;
+}
+
+.quote-form-submit {
+    background: var(--subbanner);
+    color: white;
+    border: none;
+    padding: 1rem 2rem;
+    font-size: 1rem;
+    font-weight: 600;
+    border-radius: 6px;
+    cursor: pointer;
+    width: 100%;
+    transition: background 0.2s;
+}
+
+.quote-form-submit:hover {
+    background: #4d4d8f;
+}
+
+.quote-form-submit:disabled {
+    background: #ccc;
+    cursor: not-allowed;
+}
+
+/* ================================ */
+/* Page Contact */
+/* ================================ */
+.contact-page {
+    padding: 2rem 0;
+}
+
+.contact-page h1 {
+    text-align: center;
+    font-size: 2.5rem;
+    color: var(--subbanner);
+    margin-bottom: 1rem;
+}
+
+.contact-intro {
+    text-align: center;
+    font-size: 1.1rem;
+    color: #666;
+    margin-bottom: 3rem;
+    max-width: 600px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.contact-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 2rem;
+    margin-bottom: 3rem;
+}
+
+.contact-card {
+    background: white;
+    padding: 2rem;
+    border-radius: 12px;
+    text-align: center;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.contact-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
+}
+
+.contact-icon {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+}
+
+.contact-card h3 {
+    color: var(--subbanner);
+    margin-bottom: 0.5rem;
+    font-size: 1.3rem;
+}
+
+.contact-card a {
+    color: var(--text-dark);
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 1.1rem;
+    display: inline-block;
+    margin-bottom: 0.5rem;
+    transition: color 0.2s;
+}
+
+.contact-card a:hover {
+    color: var(--subbanner);
+}
+
+.contact-card p {
+    color: #999;
+    font-size: 0.9rem;
+    margin: 0;
+}
+
+.contact-card-instagram {
+    background: linear-gradient(135deg, #833ab4 0%, #fd1d1d 50%, #fcb045 100%);
+    color: white;
+}
+
+.contact-card-instagram h3 {
+    color: white;
+}
+
+.contact-card-instagram p {
+    color: rgba(255, 255, 255, 0.9);
+}
+
+.instagram-link {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    color: white !important;
+    font-size: 1.2rem !important;
+    padding: 0.5rem 1rem;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 8px;
+    transition: background 0.2s;
+}
+
+.instagram-link:hover {
+    background: rgba(255, 255, 255, 0.3);
+    color: white !important;
+}
+
+.instagram-icon {
+    width: 24px;
+    height: 24px;
+}
+
+.contact-hours {
+    background: white;
+    padding: 2rem;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.contact-hours h2 {
+    text-align: center;
+    color: var(--subbanner);
+    margin-bottom: 1.5rem;
+}
+
+.hours-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.hours-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem;
+    background: #f5f5f5;
+    border-radius: 8px;
+}
+
+.hours-item .day {
+    font-weight: 600;
+    color: var(--text-dark);
+}
+
+.hours-item .time {
+    color: #666;
+}
+
+@media (max-width: 768px) {
+    .contact-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .contact-page h1 {
+        font-size: 2rem;
+    }
+}
+

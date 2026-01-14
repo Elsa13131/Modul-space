@@ -23,7 +23,7 @@
                     <li><a href="/">Accueil</a></li>
                     <li><a href="/apropos.html">A Propos</a></li>
                     <li><a href="/produit.html">Produit</a></li>
-                    <li><a href="#">Contact</a></li>
+                    <li><a href="/contact.html">Contact</a></li>
                 </ul>
             </nav>
         </div>
@@ -48,7 +48,7 @@
                     <li>Plateau compact avec chant arrondi pour le confort</li>
                     <li>Option panneau acoustique pour réduire le bruit</li>
                 </ul>
-                <a class="detail-cta" href="mailto:contact@modulspace.fr?subject=Devis%20Bureau%20Compact">Demander un devis</a>
+                <button class="detail-cta open-quote-modal" data-product="Bureau Compact">Demander un devis</button>
             </div>
         </section>
     </main>
@@ -65,5 +65,44 @@
         </div>
     </section>
 
+    <!-- Modal de demande de devis -->
+    <div id="quoteModal" class="quote-modal">
+        <div class="quote-modal-content">
+            <div class="quote-modal-header">
+                <h2>Demande de devis - <span id="modalProductTitle"></span></h2>
+                <button class="quote-modal-close">&times;</button>
+            </div>
+            <div class="quote-modal-body">
+                <p>Remplissez le formulaire ci-dessous pour recevoir un devis personnalisé.</p>
+                <form id="quoteForm">
+                    <input type="hidden" id="productName" name="productName">
+                    
+                    <div class="quote-form-group">
+                        <label for="nom">Nom <span class="quote-form-required">*</span></label>
+                        <input type="text" id="nom" name="nom" required>
+                    </div>
+                    
+                    <div class="quote-form-group">
+                        <label for="prenom">Prénom <span class="quote-form-required">*</span></label>
+                        <input type="text" id="prenom" name="prenom" required>
+                    </div>
+                    
+                    <div class="quote-form-group">
+                        <label for="email">Email <span class="quote-form-required">*</span></label>
+                        <input type="email" id="email" name="email" required>
+                    </div>
+                    
+                    <div class="quote-form-group">
+                        <label for="telephone">Téléphone</label>
+                        <input type="tel" id="telephone" name="telephone">
+                    </div>
+                    
+                    <button type="submit" class="quote-form-submit">Envoyer la demande</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="/static/js/quote.js"></script>
 </body>
 </html>

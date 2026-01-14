@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="fr">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Canapé Convertible - MODULSPACE</title>
+    <link rel="stylesheet" href="/static/css/style.css?v=12">
+    <link rel="icon" href="/static/favicon.ico">
+</head>
+<body>
+
+    <header class="site-header">
+        <div class="container">
+            <span class="header-welcome">BIENVENUE</span>
+            <img src="/static/img/logo.png" alt="Logo MODULSPACE" class="site-logo">
+        </div>
+    </header>
+
+    <div class="sub-banner">
+        <div class="container">
+            <nav>
+                <ul>
+                    <li><a href="/">Accueil</a></li>
+                    <li><a href="/apropos.html">A Propos</a></li>
+                    <li><a href="/produit.html">Produit</a></li>
+                    <li><a href="/contact.html">Contact</a></li>
+                </ul>
+            </nav>
+        </div>
+    </div>
+
+    <main class="container">
+        <section class="product-detail">
+            <div class="product-hero">
+                <img src="/img/img6.png" alt="ByMyshelf">
+            </div>
+            <div class="product-info">
+                <h1>ByMyshelf</h1>
+                <div class="product-meta">
+                    <span class="product-tag">Modulable</span>
+                    <span class="product-meta-item">3 configurations</span>
+                    <span class="product-meta-item">Livraison 4-6 semaines</span>
+                </div>
+                <p>Un meuble multifonctionnel qui s'adapte à vos besoins quotidiens.</p>
+                <ul class="detail-list">
+                    <li>Structure en bois durable, charnières sécurisées et silencieuses</li>
+                    <li>Trois positions rapides : etagère, armoire, table</li>
+                    <li>Finitions personnalisables ( teintes )</li>
+                    <li> </li>
+                </ul>
+                <button class="detail-cta open-quote-modal" data-product="ByMyshelf">Demander un devis</button>
+            </div>
+        </section>
+
+        <!-- Product Features Gallery -->
+        <section class="product-features">
+            <h2>Découvrez les 3 configurations</h2>
+            <div class="features-grid">
+                <div class="feature-item">
+                    <img src="/img/img6.png" alt="ByMyshelf - Étagère">
+                    <h3>Étagère</h3>
+                    <p>Mode détente et jeu. Parfait pour se relaxer ou divertir les enfants en toute sécurité.</p>
+                </div>
+                <div class="feature-item">
+                    <img src="/img/img5.png" alt="ByMyshelf - Armoire">
+                    <h3>Armoire</h3>
+                    <p>Transformée en table pratique pour le repas, le travail ou la décoration.</p>
+                </div>
+                <div class="feature-item">
+                    <img src="/img/ByMyshelf_Table.png" alt="ByMyshelf - Table">
+                    <h3>Table</h3>
+                    <p>Transformée en table pratique pour le repas, le travail ou la décoration.</p>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="site-footer">
+        <div class="container">© 2025 Ydays</div>
+    </footer>
+
+    <section class="contact-banner">
+        <div class="container">
+            <div class="contact-item">Téléphone : <a href="tel:+33000000000">+33 0 00 00 00 00</a></div>
+            <div class="contact-item">Email : <a href="mailto:contact@modulspace.fr">contact@modulspace.fr</a></div>
+            <div class="contact-item">Adresse : 123 Rue Exemple, 75000 Paris</div>
+        </div>
+    </section>
+
+    <!-- Modal de demande de devis -->
+    <div id="quoteModal" class="quote-modal">
+        <div class="quote-modal-content">
+            <div class="quote-modal-header">
+                <h2>Demande de devis - <span id="modalProductTitle"></span></h2>
+                <button class="quote-modal-close">&times;</button>
+            </div>
+            <div class="quote-modal-body">
+                <p>Remplissez le formulaire ci-dessous pour recevoir un devis personnalisé.</p>
+                <form id="quoteForm">
+                    <input type="hidden" id="productName" name="productName">
+                    
+                    <div class="quote-form-group">
+                        <label for="nom">Nom <span class="quote-form-required">*</span></label>
+                        <input type="text" id="nom" name="nom" required>
+                    </div>
+                    
+                    <div class="quote-form-group">
+                        <label for="prenom">Prénom <span class="quote-form-required">*</span></label>
+                        <input type="text" id="prenom" name="prenom" required>
+                    </div>
+                    
+                    <div class="quote-form-group">
+                        <label for="email">Email <span class="quote-form-required">*</span></label>
+                        <input type="email" id="email" name="email" required>
+                    </div>
+                    
+                    <div class="quote-form-group">
+                        <label for="telephone">Téléphone</label>
+                        <input type="tel" id="telephone" name="telephone">
+                    </div>
+                    
+                    <button type="submit" class="quote-form-submit">Envoyer la demande</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="/static/js/quote.js"></script>
+</body>
+</html>
