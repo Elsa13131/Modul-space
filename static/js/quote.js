@@ -83,14 +83,33 @@ ${prenom} ${nom}`;
         formData.append('produit', produit);
 
         try {
-            // Envoyer via FormSubmit.co
-            const response = await fetch('https://formsubmit.co/elsachochon13@gmail.com', {
+            // 1. Enregistrer dans la base de données
+            const dbResponse = await fetch('/api/quote', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    nom: nom,
+                    prenom: prenom,
+                    email: email,
+                    telephone: telephone,
+                    produit: produit,
+                    message: message
+                })
+            });
+
+            if (!dbResponse.ok) {
+                throw new Error('Erreur lors de l\'enregistrement');
+            }
+
+            // 2. Envoyer via FormSubmit.co
+            await fetch('https://formsubmit.co/elsachochon13@gmail.com', {
                 method: 'POST',
                 body: formData,
                 mode: 'no-cors'
             });
 
-            // no-cors ne permet pas de lire la réponse, on suppose que ça marche
             alert('Votre demande de devis a été envoyée avec succès ! Nous vous recontacterons rapidement.');
             modal.style.display = 'none';
             form.reset();

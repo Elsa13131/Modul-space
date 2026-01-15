@@ -2,6 +2,7 @@ package main
 
 import (
 	"database/sql"
+	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
@@ -27,6 +28,7 @@ func main() {
 	mux.HandleFunc("/login", loginHandler)
 	mux.HandleFunc("/logout", logoutHandler)
 	mux.HandleFunc("/dashboard", dashboardHandler)
+	mux.HandleFunc("/api/quote", quoteHandler)
 	mux.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("static"))))
 	mux.Handle("/img/", http.StripPrefix("/img/", http.FileServer(http.Dir("static/img"))))
 	mux.Handle("/fonts/", http.StripPrefix("/fonts/", http.FileServer(http.Dir("fonts"))))
@@ -69,13 +71,25 @@ func InitDB() error {
 		created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 	);
 	CREATE INDEX IF NOT EXISTS idx_email ON users(email);
+	
+	CREATE TABLE IF NOT EXISTS quotes (
+		id SERIAL PRIMARY KEY,
+		nom VARCHAR(100) NOT NULL,
+		prenom VARCHAR(100) NOT NULL,
+		email VARCHAR(255) NOT NULL,
+		telephone VARCHAR(20),
+		produit VARCHAR(255) NOT NULL,
+		message TEXT,
+		created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+	);
+	CREATE INDEX IF NOT EXISTS idx_quote_email ON quotes(email);
 	`
 
 	if _, err := db.Exec(query); err != nil {
 		return err
 	}
 
-	log.Println("✅ Table users créée/vérifiée")
+	log.Println("✅ Tables users et quotes créées/vérifiées")
 	return nil
 }
 
@@ -148,6 +162,30 @@ func GetUserFromSession(r *http.Request) *User {
 		return nil
 	}
 	return user
+}
+
+// Quote représente une demande de devis
+type Quote struct {
+	ID        int
+	Nom       string `json:"nom"`
+	Prenom    string `json:"prenom"`
+	Email     string `json:"email"`
+	Telephone string `json:"telephone"`
+	Produit   string `json:"produit"`
+	Message   string `json:"message"`
+}
+
+// CreateQuote enregistre une demande de devis
+func CreateQuote(nom, prenom, email, telephone, produit, message string) error {
+	if db == nil {
+		return fmt.Errorf("base de données non configurée")
+	}
+
+	_, err := db.Exec(
+		"INSERT INTO quotes (nom, prenom, email, telephone, produit, message) VALUES ($1, $2, $3, $4, $5, $6)",
+		nom, prenom, email, telephone, produit, message,
+	)
+	return err
 }
 
 // Handlers
@@ -282,4 +320,38 @@ func dashboardHandler(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 	w.Write([]byte(html))
+}
+
+func quoteHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	var quote Quote
+	if err := json.NewDecoder(r.Body).Decode(&quote); err != nil {
+		http.Error(w, "Invalid request", http.StatusBadRequest)
+		return
+	}
+
+	// Validation
+	if quote.Nom == "" || quote.Prenom == "" || quote.Email == "" || quote.Produit == "" {
+		http.Error(w, "Missing required fields", http.StatusBadRequest)
+		return
+	}
+
+	// Enregistrer dans la base de données
+	if err := CreateQuote(quote.Nom, quote.Prenom, quote.Email, quote.Telephone, quote.Produit, quote.Message); err != nil {
+		log.Printf("Erreur création devis: %v", err)
+		http.Error(w, "Error saving quote", http.StatusInternalServerError)
+		return
+	}
+
+	// Envoyer l'email
+	if err := SendQuoteEmail(quote.Nom, quote.Prenom, quote.Email, quote.Telephone, quote.Produit); err != nil {
+		log.Printf("Erreur envoi email: %v", err)
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]string{"status": "success", "message": "Demande de devis enregistrée"})
 }
