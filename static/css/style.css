@@ -69,6 +69,41 @@ header.site-header .container {
     width: 100%;
 }
 
+/* Auth buttons in header */
+.header-auth-buttons {
+    position: absolute;
+    right: 1rem;
+    display: flex;
+    gap: 0.8rem;
+}
+.header-auth-btn {
+    background: white;
+    color: var(--subbanner);
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+    font-family: 'Siberian', "Segoe UI", Roboto, Arial, sans-serif;
+    font-size: 0.85rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    cursor: pointer;
+    text-decoration: none;
+    display: inline-block;
+    transition: all 0.3s ease;
+}
+.header-auth-btn:hover {
+    background: #f0f0f0;
+    transform: translateY(-2px);
+}
+.header-auth-btn.login {
+    background: transparent;
+    color: white;
+    border: 2px solid white;
+}
+.header-auth-btn.login:hover {
+    background: rgba(255,255,255,0.1);
+}
+
 /* Welcome text on the left */
 .header-welcome {
     position: absolute;
@@ -538,6 +573,11 @@ main.container {
     margin-bottom: 1rem;
 }
 
+.product-info {
+    display: flex;
+    flex-direction: column;
+}
+
 .product-meta {
     display: flex;
     flex-wrap: wrap;
@@ -581,15 +621,20 @@ main.container {
 }
 
 .detail-cta {
-    display: inline-block;
+    display: block;
     background-color: var(--subbanner);
     color: var(--text-light);
-    padding: 0.9rem 1.4rem;
+    padding: 1.2rem 2rem;
     border-radius: 6px;
     text-transform: uppercase;
     font-family: 'Siberian', "Segoe UI", Roboto, Arial, sans-serif;
     letter-spacing: 0.5px;
     transition: transform 0.2s ease, box-shadow 0.2s ease, background-color 0.3s ease;
+    margin-left: auto;
+    width: fit-content;
+    text-align: center;
+    font-size: 1.05rem;
+    font-weight: 600;
 }
 
 .detail-cta:hover {
