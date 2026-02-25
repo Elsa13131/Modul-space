@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="fr">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Cloison Modulaire - MODULSPACE</title>
+    <link rel="stylesheet" href="/static/css/style.css?v=12">
+    <link rel="icon" href="/static/favicon.ico">
+</head>
+<body>
+
+    <header class="site-header">
+        <div class="container">
+            <img src="/static/img/logo.png" alt="Logo MODULSPACE" class="site-logo">
+            <div class="header-auth-buttons">
+                <a href="/login.html" class="header-auth-btn login">Connexion</a>
+                <a href="/register.html" class="header-auth-btn">Inscription</a>
+            </div>
+        </div>
+    </header>
+
+    <div class="sub-banner">
+        <div class="container">
+            <nav>
+                <ul>
+                    <li><a href="/">Accueil</a></li>
+                    <li><a href="/apropos.html">A Propos</a></li>
+                    <li><a href="/produit.html">Produit</a></li>
+                    <li><a href="/contact.html">Contact</a></li>
+                </ul>
+            </nav>
+        </div>
+    </div>
+
+    <main class="container">
+        <section class="product-detail">
+            <div class="product-hero">
+                <img src="/img/img8.png" alt="Cloison modulaire">
+            </div>
+            <div class="product-info">
+                <h1>Cloison Modulaire</h1>
+                <div class="product-meta">
+                    <span class="product-tag">Aménagement</span>
+                    <span class="product-meta-item">Montage rapide</span>
+                    <span class="product-meta-item">Réversible</span>
+                </div>
+                <p>Créez ou réorganisez vos espaces en un clin d'œil. La cloison modulaire est légère, acoustique et réversible pour suivre l'évolution de vos besoins.</p>
+                <ul class="detail-list">
+                    <li>Panneaux acoustiques pour réduire la réverbération</li>
+                    <li>Modules vitrés ou pleins selon l'intimité souhaitée</li>
+                    <li>Fixation sans perçage pour préserver vos murs</li>
+                    <li>Possibilité de passer câbles et éclairage intégré</li>
+                </ul>
+                <button class="detail-cta open-quote-modal" data-product="Cloison Modulaire">Demander un devis</button>
+            </div>
+        </section>
+    </main>
+
+    <footer class="site-footer">
+        <div class="container">© 2025 Ydays</div>
+    </footer>
+
+    <section class="contact-banner">
+        <div class="container">
+            <div class="contact-item">Téléphone : <a href="tel:+33000000000">+33 0 00 00 00 00</a></div>
+            <div class="contact-item">Email : <a href="mailto:contact@modulspace.fr">contact@modulspace.fr</a></div>
+            <div class="contact-item">Adresse : 123 Rue Exemple, 75000 Paris</div>
+        </div>
+    </section>
+
+    <!-- Modal de demande de devis -->
+    <div id="quoteModal" class="quote-modal">
+        <div class="quote-modal-content">
+            <div class="quote-modal-header">
+                <h2>Demande de devis - <span id="modalProductTitle"></span></h2>
+                <button class="quote-modal-close">&times;</button>
+            </div>
+            <div class="quote-modal-body">
+                <p>Remplissez le formulaire ci-dessous pour recevoir un devis personnalisé.</p>
+                <form id="quoteForm">
+                    <input type="hidden" id="productName" name="productName">
+                    
+                    <div class="quote-form-group">
+                        <label for="nom">Nom <span class="quote-form-required">*</span></label>
+                        <input type="text" id="nom" name="nom" required>
+                    </div>
+                    
+                    <div class="quote-form-group">
+                        <label for="prenom">Prénom <span class="quote-form-required">*</span></label>
+                        <input type="text" id="prenom" name="prenom" required>
+                    </div>
+                    
+                    <div class="quote-form-group">
+                        <label for="email">Email <span class="quote-form-required">*</span></label>
+                        <input type="email" id="email" name="email" required>
+                    </div>
+                    
+                    <div class="quote-form-group">
+                        <label for="telephone">Téléphone</label>
+                        <input type="tel" id="telephone" name="telephone">
+                    </div>
+                    
+                    <button type="submit" class="quote-form-submit">Envoyer la demande</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="/static/js/quote.js"></script>
+</body>
+</html>

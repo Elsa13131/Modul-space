@@ -2,11 +2,9 @@
 /* Style minimal pour la base du site */
 /* ================================ */
 :root {
-    --bg: #92AD96; /* site background */
-    --header: #92AD96; /* top banner */
-    --subbanner: #6161AB; /* secondary banner */
-    --subbanner2: #4A4A7A; /* alternative secondary banner */
-    --sidebar-bg: #6161AB; /* fond sidebar bleu */
+    --bg: #ffffff; /* site background */
+    --header: #f5f5f5; /* top banner */
+    --subbanner: #140E8F; /* secondary banner */
     --text-light: #ffffff;
     --text-dark: #222222;
 }
@@ -32,11 +30,17 @@
 
 /* Global base: use system fonts by default */
 html, body {
-    height: 100%;
     margin: 0;
     font-family: "Segoe UI", Roboto, Arial, sans-serif;
     background: var(--bg);
     color: var(--text-dark);
+}
+
+/* Layout: stick footer/contact banner at bottom when content is short */
+body {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
 }
 
 .container {
@@ -62,6 +66,41 @@ header.site-header .container {
     justify-content: center;
     position: relative;
     width: 100%;
+}
+
+/* Auth buttons in header */
+.header-auth-buttons {
+    position: absolute;
+    right: 1rem;
+    display: flex;
+    gap: 0.8rem;
+}
+.header-auth-btn {
+    background: var(--subbanner);
+    color: var(--text-light);
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+    font-family: 'Siberian', "Segoe UI", Roboto, Arial, sans-serif;
+    font-size: 0.85rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    cursor: pointer;
+    text-decoration: none;
+    display: inline-block;
+    transition: all 0.3s ease;
+}
+.header-auth-btn:hover {
+    background: #4a4a8a;
+    transform: translateY(-2px);
+}
+.header-auth-btn.login {
+    background: var(--subbanner);
+    color: var(--text-light);
+    border: none;
+}
+.header-auth-btn.login:hover {
+    background: rgba(255,255,255,0.1);
 }
 
 /* Welcome text on the left */
@@ -111,67 +150,6 @@ header.site-header .container,
     letter-spacing: 0.06em;
 }
 
-/* Deuxième bannière (subbanner2) */
-.subbanner2 {
-    background: #4A4A7A;
-    color: #ffffff;
-    padding: 3rem 0;
-    min-height: 280px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.subbanner2 .container {
-    width: 100%;
-    display: flex;
-    justify-content: center;
-    padding: 1rem;
-}
-
-.subbanner2 .feature-row {
-    display: flex;
-    justify-content: center;
-    gap: 3rem;
-    align-items: center;
-    flex-wrap: wrap;
-}
-
-.subbanner2 .feature {
-    text-align: center;
-    color: #ffffff;
-    font-family: "Siberian", "Segoe UI", Roboto, Arial, sans-serif;
-    font-size: 1.1rem;
-    letter-spacing: 0.06em;
-}
-
-.subbanner2 .feature-circle {
-    width: 250px;
-    height: 250px;
-    border-radius: 50%;
-    border: 5px solid #1e3a8a;
-    background: #e8f0ea;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin: 0 auto 0.8rem auto;
-    overflow: hidden;
-}
-
-.subbanner2 .feature-circle img {
-    width: 60%;
-    height: 60%;
-    object-fit: contain;
-}
-
-.subbanner2 .feature p {
-    margin-top: 0.5rem;
-    font-size: 1.3rem;
-    color: #ffffff;
-    font-weight: 400;
-    letter-spacing: 0.05em;
-}
-
 /* Collapse the visual gap between header and sub-banner */
 /* collapse the gap on desktop/tablet and slightly less on mobile */
 header.site-header + .sub-banner { margin-top: -28px; }
@@ -182,34 +160,6 @@ header.site-header + .sub-banner { margin-top: -28px; }
     header.site-header + .sub-banner { margin-top: -10px; }
 }
 
-<<<<<<< Updated upstream
-/* Main content avec gradient gauche->droite */
-main.main-with-sidebar {
-    background: linear-gradient(to right, var(--sidebar-bg) 0%, var(--sidebar-bg) 30%, var(--bg) 30%, var(--bg) 100%);
-    padding: 2rem 0;
-    margin: 0;
-    max-width: 100%;
-    min-height: 300px;
-}
-
-main.main-with-sidebar .container {
-    max-width: 1000px;
-    margin: 0 auto;
-}
-
-/* Wrapper pour contenu avec sidebar */
-.content-wrapper {
-    display: flex;
-    gap: 2rem;
-    align-items: flex-start;
-}
-
-/* Sidebar gauche sans fond (le fond vient du main) */
-.sidebar-left {
-    background: transparent;
-    padding: 2rem 1.5rem;
-    min-width: 250px;
-=======
 /* Hero Section with background image */
 .hero-section {
     position: relative;
@@ -222,20 +172,12 @@ main.main-with-sidebar .container {
     margin: 0;
     padding-bottom: 2rem; /* MODIF: évite d'aller coller/déborder dans la bannière bleue */
     overflow: hidden;     /* MODIF: coupe tout débordement visuel */
->>>>>>> Stashed changes
     display: flex;
     flex-direction: column;
-    gap: 2rem;
-    margin-left: 2rem;
+    align-items: center;
+    justify-content: flex-start;
 }
 
-<<<<<<< Updated upstream
-.sidebar-item {
-    background: transparent;
-    border: 2px solid #ffffff;
-    color: #ffffff;
-    padding: 1rem 1.5rem;
-=======
 .hero-section::before {
     content: '';
     position: absolute;
@@ -263,17 +205,21 @@ main.main-with-sidebar .container {
     z-index: 3;
     max-width: 900px;
     padding: 3rem 2rem 1rem 2rem;
->>>>>>> Stashed changes
     text-align: center;
-    font-family: 'Siberian', "Segoe UI", Roboto, Arial, sans-serif;
-    font-size: 1.2rem;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
+    width: 100%;
 }
 
-<<<<<<< Updated upstream
-#hero {
-=======
+.hero-slogan {
+    font-family: 'Siberian', "Segoe UI", Roboto, Arial, sans-serif;
+    font-size: 2.8rem;
+    font-weight: 400;
+    color: var(--text-dark);
+    text-transform: uppercase;
+    line-height: 1.4;
+    letter-spacing: 0.02em;
+    text-shadow: 3px 3px 6px rgba(255, 255, 255, 0.9);
+}
+
 .hero-carousel {
     position: relative;
     z-index: 5;
@@ -311,18 +257,14 @@ main.container { padding:2rem 1rem; }
 
 /* Main content grows to push contact/footer to bottom */
 main.container {
->>>>>>> Stashed changes
     flex: 1;
-    background: transparent;
-    padding: 2rem;
-    color: var(--text-dark);
+    width: 100%;
+    box-sizing: border-box;
 }
 
 /* Footer */
 .site-footer { padding:1rem 0; text-align:center; color:#333; }
 
-<<<<<<< Updated upstream
-=======
 /* Carousel styles */
 #carousel-section {
     padding: 0.5rem 0 0 0; /* MODIF: réduit l'espace vertical */
@@ -493,7 +435,6 @@ main.container {
     text-decoration: none;
 }
 
->>>>>>> Stashed changes
 /* Responsive tweaks */
 @media (max-width:900px) {
     header.site-header img{height:150px}
@@ -501,26 +442,12 @@ main.container {
     /* tablet: slightly smaller but still large */
     .sub-banner nav a{font-size:1.25rem}
 }
-@media (max-width:768px) {
-    main.main-with-sidebar {
-        background: var(--sidebar-bg);
-    }
-    .content-wrapper {
-        flex-direction: column;
-    }
-    .sidebar-left {
-        width: 100%;
-        margin-left: 0;
-    }
-}
 @media (max-width:600px) {
     header.site-header img{height:100px}
     .sub-banner { padding: 1.4rem 0; }
     .sub-banner nav{padding:0.5rem 0}
     /* mobile: readable but not oversized */
     .sub-banner nav a{font-size:1.05rem}
-<<<<<<< Updated upstream
-=======
 }
 
 /* About page sections */
@@ -1252,5 +1179,4 @@ main.container {
     .contact-page h1 {
         font-size: 2rem;
     }
->>>>>>> Stashed changes
 }

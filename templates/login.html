@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Connexion - MODULSPACE</title>
+    <link rel="stylesheet" href="/static/css/style.css?v=13">
+    <link rel="icon" href="/static/favicon.ico">
+    <style>
+        .auth-container {
+            max-width: 400px;
+            margin: 3rem auto;
+            padding: 2rem;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        }
+        .auth-container h1 {
+            text-align: center;
+            color: var(--subbanner);
+            margin-bottom: 2rem;
+        }
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: var(--text-dark);
+        }
+        .form-group input {
+            width: 100%;
+            padding: 0.75rem;
+            border: 2px solid #e0e0e0;
+            border-radius: 6px;
+            font-size: 1rem;
+            box-sizing: border-box;
+        }
+        .form-group input:focus {
+            outline: none;
+            border-color: var(--subbanner);
+        }
+        .submit-btn {
+            width: 100%;
+            padding: 0.75rem;
+            background: var(--subbanner);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .submit-btn:hover {
+            background: #4d4d8f;
+        }
+        .auth-link {
+            text-align: center;
+            margin-top: 1.5rem;
+            color: #666;
+        }
+        .auth-link a {
+            color: var(--subbanner);
+            text-decoration: none;
+            font-weight: 600;
+        }
+        .auth-link a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+
+    <header class="site-header">
+        <div class="container">
+            <img src="/static/img/logo.png" alt="Logo MODULSPACE" class="site-logo">
+        </div>
+    </header>
+
+    <div class="sub-banner">
+        <div class="container">
+            <nav>
+                <ul>
+                    <li><a href="/">Accueil</a></li>
+                    <li><a href="/apropos.html">A Propos</a></li>
+                    <li><a href="/produit.html">Produit</a></li>
+                    <li><a href="/contact.html">Contact</a></li>
+                </ul>
+            </nav>
+        </div>
+    </div>
+
+    <main class="container">
+        <div class="auth-container">
+            <h1>Connexion</h1>
+            <form method="POST" action="/login">
+                <div class="form-group">
+                    <label for="email">Email</label>
+                    <input type="email" id="email" name="email" required>
+                </div>
+                <div class="form-group">
+                    <label for="password">Mot de passe</label>
+                    <input type="password" id="password" name="password" required>
+                </div>
+                <button type="submit" class="submit-btn">Se connecter</button>
+            </form>
+            <div class="auth-link">
+                Pas encore de compte ? <a href="/register">S'inscrire</a>
+            </div>
+        </div>
+    </main>
+
+    <footer class="site-footer">
+        <div class="container">© 2025 Ydays</div>
+    </footer>
+
+    <section class="contact-banner">
+        <div class="container">
+            <div class="contact-item">Téléphone : <a href="tel:+33000000000">+33 0 00 00 00 00</a></div>
+            <div class="contact-item">Email : <a href="mailto:contact@modulspace.fr">contact@modulspace.fr</a></div>
+            <div class="contact-item">Adresse : 123 Rue Exemple, 75000 Paris</div>
+        </div>
+    </section>
+
+</body>
+</html>

@@ -1,1 +1,1 @@
-web: ./main
+web: ./bin/MODUL-SPACE
