@@ -11,7 +11,17 @@
 
     <header class="site-header">
         <div class="container">
-            <img src="/static/img/logo.png" alt="Logo MODULSPACE">
+            <img src="/static/img/logo.png" alt="Logo MODULSPACE" class="site-logo">
+            <div class="header-auth-buttons">
+                <div id="auth-guest" class="auth-guest">
+                    <a href="/login.html" class="header-auth-btn login">Connexion</a>
+                    <a href="/register.html" class="header-auth-btn">Inscription</a>
+                </div>
+                <div id="auth-user" class="auth-user" style="display:none;">
+                    <span class="user-name" id="user-prenom"></span>
+                    <a href="/logout" class="header-auth-btn">Déconnexion</a>
+                </div>
+            </div>
         </div>
     </header>
 
@@ -20,8 +30,8 @@
             <nav>
                 <ul>
                     <li><a href="/">Accueil</a></li>
-                    <li><a href="/produits.html">Produits</a></li>
-                    <li><a href="/a-propos.html">À propos</a></li>
+                    <li><a href="/produit.html">Produit</a></li>
+                    <li><a href="/apropos.html">A Propos</a></li>
                     <li><a href="/contact.html">Contact</a></li>
                 </ul>
             </nav>
@@ -82,38 +92,41 @@
     <div id="quoteModal" class="quote-modal">
         <div class="quote-modal-content">
             <div class="quote-modal-header">
-                <h2>Demande de devis</h2>
-                <button type="button" class="quote-modal-close" aria-label="Fermer">×</button>
+                <h2>Demande de devis - <span id="modalProductTitle"></span></h2>
+                <button class="quote-modal-close">&times;</button>
             </div>
             <div class="quote-modal-body">
-                <p>Remplissez le formulaire pour recevoir votre devis.</p>
+                <p>Remplissez le formulaire ci-dessous pour recevoir un devis personnalisé.</p>
                 <form id="quoteForm">
+                    <input type="hidden" id="productName" name="productName" value="Basculette">
+                    
                     <div class="quote-form-group">
-                        <label for="quoteNom">Nom <span class="quote-form-required">*</span></label>
-                        <input id="quoteNom" name="nom" type="text" required>
+                        <label for="nom">Nom <span class="quote-form-required">*</span></label>
+                        <input type="text" id="nom" name="nom" required>
                     </div>
+                    
                     <div class="quote-form-group">
-                        <label for="quotePrenom">Prénom <span class="quote-form-required">*</span></label>
-                        <input id="quotePrenom" name="prenom" type="text" required>
+                        <label for="prenom">Prénom <span class="quote-form-required">*</span></label>
+                        <input type="text" id="prenom" name="prenom" required>
                     </div>
+                    
                     <div class="quote-form-group">
-                        <label for="quoteEmail">Email <span class="quote-form-required">*</span></label>
-                        <input id="quoteEmail" name="email" type="email" required>
+                        <label for="email">Email <span class="quote-form-required">*</span></label>
+                        <input type="email" id="email" name="email" required>
                     </div>
+                    
                     <div class="quote-form-group">
-                        <label for="quoteTelephone">Téléphone</label>
-                        <input id="quoteTelephone" name="telephone" type="tel">
+                        <label for="telephone">Téléphone</label>
+                        <input type="tel" id="telephone" name="telephone">
                     </div>
-                    <div class="quote-form-group">
-                        <label for="quoteProduit">Produit</label>
-                        <input id="quoteProduit" name="produit" type="text" value="Basculette" readonly>
-                    </div>
+                    
                     <button type="submit" class="quote-form-submit">Envoyer la demande</button>
                 </form>
             </div>
         </div>
     </div>
 
+    <script src="/static/js/auth.js"></script>
     <script src="/static/js/quote.js"></script>
 </body>
 </html>

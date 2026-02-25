@@ -1,0 +1,42 @@
+{{define "devis.html"}}
+{{template "header" .}}
+
+    <main class="container">
+        <div class="auth-container" style="max-width: 600px; margin: 60px auto;">
+            <h1 class="auth-title">Demande de Devis</h1>
+            <p style="text-align: center; color: #666; margin-bottom: 30px;">
+                Remplissez ce formulaire pour recevoir un devis personnalisé
+            </p>
+
+            <form class="auth-form" method="POST" action="/devis">
+                <div class="form-group">
+                    <label for="subject">Sujet *</label>
+                    <input type="text" id="subject" name="subject" required 
+                           placeholder="Ex: Aménagement bureau open-space">
+                </div>
+
+                <div class="form-group">
+                    <label for="description">Description détaillée *</label>
+                    <textarea id="description" name="description" required rows="6"
+                              placeholder="Décrivez votre projet en détail..."
+                              style="padding: 12px; border: 1px solid #ddd; border-radius: 5px; font-size: 16px; font-family: inherit; resize: vertical;"></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="budget">Budget estimé (€)</label>
+                    <input type="number" id="budget" name="budget" step="0.01" min="0"
+                           placeholder="Ex: 5000">
+                    <small>Optionnel - nous aide à adapter notre proposition</small>
+                </div>
+
+                <button type="submit" class="btn-submit">Envoyer la demande</button>
+            </form>
+
+            <div class="back-link">
+                <a href="/">← Retour à l'accueil</a>
+            </div>
+        </div>
+    </main>
+
+{{template "footer" .}}
+{{end}}

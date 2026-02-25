@@ -1,0 +1,45 @@
+{{define "header"}}
+<!doctype html>
+<html lang="fr">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{{.Title}} - MODULSPACE</title>
+    <link rel="stylesheet" href="/static/css/style.css?v=12">
+    <link rel="icon" href="/static/favicon.ico">
+    {{if .ExtraCSS}}{{.ExtraCSS}}{{end}}
+</head>
+<body>
+
+    <header class="site-header">
+        <div class="container">
+            <span class="header-welcome">BIENVENUE</span>
+            <img src="/static/img/logo.png" alt="Logo MODULSPACE" class="site-logo">
+            
+            <div class="auth-buttons">
+                {{if .Username}}
+                    <span class="user-welcome">👋 {{.Username}}</span>
+                    <form method="POST" action="/logout" style="display:inline;">
+                        <button type="submit" class="btn-logout">Déconnexion</button>
+                    </form>
+                {{else}}
+                    <a href="/login" class="btn-login">Connexion</a>
+                    <a href="/register" class="btn-register">Inscription</a>
+                {{end}}
+            </div>
+        </div>
+    </header>
+
+    <div class="sub-banner">
+        <div class="container">
+            <nav>
+                <ul>
+                    <li><a href="/">Accueil</a></li>
+                    <li><a href="/apropos.html">A Propos</a></li>
+                    <li><a href="/produit.html">Produit</a></li>
+                    <li><a href="#">Contact</a></li>
+                </ul>
+            </nav>
+        </div>
+    </div>
+{{end}}

@@ -14,8 +14,14 @@
             <span class="header-welcome">BIENVENUE</span>
             <img src="/static/img/logo.png" alt="Logo MODULSPACE" class="site-logo">
             <div class="header-auth-buttons">
-                <a href="/login.html" class="header-auth-btn login">Connexion</a>
-                <a href="/register.html" class="header-auth-btn">Inscription</a>
+                <div id="auth-guest" class="auth-guest">
+                    <a href="/login.html" class="header-auth-btn login">Connexion</a>
+                    <a href="/register.html" class="header-auth-btn">Inscription</a>
+                </div>
+                <div id="auth-user" class="auth-user" style="display:none;">
+                    <span class="user-name" id="user-prenom"></span>
+                    <a href="/logout" class="header-auth-btn">Déconnexion</a>
+                </div>
             </div>
         </div>
     </header>
@@ -73,6 +79,32 @@
             <div class="contact-item">Adresse : 19 rue Haddock, 77700 Chessy. </div>
         </div>
     </section>
+
+    <script>
+        async function checkUserStatus() {
+            try {
+                const response = await fetch('/api/user');
+                const data = await response.json();
+                
+                const authGuest = document.getElementById('auth-guest');
+                const authUser = document.getElementById('auth-user');
+                const userPrenomSpan = document.getElementById('user-prenom');
+                
+                if (data.loggedIn) {
+                    authGuest.style.display = 'none';
+                    authUser.style.display = 'flex';
+                    userPrenomSpan.textContent = data.prenom || data.email;
+                } else {
+                    authGuest.style.display = 'flex';
+                    authUser.style.display = 'none';
+                }
+            } catch (error) {
+                console.error('Erreur vérification statut:', error);
+            }
+        }
+        
+        checkUserStatus();
+    </script>
 
 </body>
 </html>

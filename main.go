@@ -11,7 +11,8 @@ import (
 	"path/filepath"
 	"strings"
 
-	_ "github.com/lib/pq"
+	_ "modernc.org/sqlite"
+	_ "github.com/go-sql-driver/mysql"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -28,8 +29,8 @@ func main() {
 	mux.HandleFunc("/register", registerHandler)
 	mux.HandleFunc("/login", loginHandler)
 	mux.HandleFunc("/logout", logoutHandler)
-	mux.HandleFunc("/dashboard", dashboardHandler)
 	mux.HandleFunc("/api/quote", quoteHandler)
+	mux.HandleFunc("/api/user", userHandler)
 	mux.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("static"))))
 	mux.Handle("/img/", http.StripPrefix("/img/", http.FileServer(http.Dir("static/img"))))
 	mux.Handle("/fonts/", http.StripPrefix("/fonts/", http.FileServer(http.Dir("fonts"))))
@@ -42,39 +43,54 @@ func main() {
 	log.Fatal(http.ListenAndServe(":"+port, mux))
 }
 
-// InitDB initialise la base de données
+// InitDB initialise la base de données MySQL
 func InitDB() error {
-	databaseURL := os.Getenv("DATABASE_URL")
-	if databaseURL == "" {
-		log.Println("DATABASE_URL non définie, mode sans base de données")
-		return nil
+	var err error
+	// Connexion d'abord sans base de données pour la créer
+	dsn := "root:@tcp(localhost:3306)/?parseTime=true"
+	tempDB, err := sql.Open("mysql", dsn)
+	if err != nil {
+		return fmt.Errorf("erreur connexion MySQL: %v", err)
+	}
+	defer tempDB.Close()
+
+	// Créer la base de données si elle n'existe pas
+	if _, err := tempDB.Exec("CREATE DATABASE IF NOT EXISTS modulspace"); err != nil {
+		return fmt.Errorf("erreur création base de données: %v", err)
 	}
 
-	var err error
-	db, err = sql.Open("postgres", databaseURL)
+	// Maintenant se connecter à la base de données modulspace
+	dsn = "root:@tcp(localhost:3306)/modulspace?parseTime=true"
+	db, err = sql.Open("mysql", dsn)
 	if err != nil {
-		return fmt.Errorf("erreur connexion: %v", err)
+		return fmt.Errorf("erreur connexion MySQL modulspace: %v", err)
 	}
 
 	if err = db.Ping(); err != nil {
 		return fmt.Errorf("erreur ping: %v", err)
 	}
 
-	log.Println("✅ Connecté à PostgreSQL")
+	log.Println("✅ Connecté à MySQL")
 
-	query := `
+	// Créer table users
+	query1 := `
 	CREATE TABLE IF NOT EXISTS users (
-		id SERIAL PRIMARY KEY,
+		id INT AUTO_INCREMENT PRIMARY KEY,
 		email VARCHAR(255) UNIQUE NOT NULL,
 		password_hash VARCHAR(255) NOT NULL,
 		nom VARCHAR(100),
 		prenom VARCHAR(100),
 		created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-	);
-	CREATE INDEX IF NOT EXISTS idx_email ON users(email);
-	
+	)`
+
+	if _, err := db.Exec(query1); err != nil {
+		return fmt.Errorf("erreur création table users: %v", err)
+	}
+
+	// Créer table quotes
+	query2 := `
 	CREATE TABLE IF NOT EXISTS quotes (
-		id SERIAL PRIMARY KEY,
+		id INT AUTO_INCREMENT PRIMARY KEY,
 		nom VARCHAR(100) NOT NULL,
 		prenom VARCHAR(100) NOT NULL,
 		email VARCHAR(255) NOT NULL,
@@ -82,12 +98,10 @@ func InitDB() error {
 		produit VARCHAR(255) NOT NULL,
 		message TEXT,
 		created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-	);
-	CREATE INDEX IF NOT EXISTS idx_quote_email ON quotes(email);
-	`
+	)`
 
-	if _, err := db.Exec(query); err != nil {
-		return err
+	if _, err := db.Exec(query2); err != nil {
+		return fmt.Errorf("erreur création table quotes: %v", err)
 	}
 
 	log.Println("✅ Tables users et quotes créées/vérifiées")
@@ -121,9 +135,12 @@ func CreateUser(email, password, nom, prenom string) error {
 	}
 
 	_, err = db.Exec(
-		"INSERT INTO users (email, password_hash, nom, prenom) VALUES ($1, $2, $3, $4)",
+		"INSERT INTO users (email, password_hash, nom, prenom) VALUES (?, ?, ?, ?)",
 		email, string(hashedPassword), nom, prenom,
 	)
+	if err != nil {
+		log.Printf("Erreur insertion utilisateur %s: %v", email, err)
+	}
 	return err
 }
 
@@ -135,7 +152,7 @@ func GetUserByEmail(email string) (*User, error) {
 
 	user := &User{}
 	err := db.QueryRow(
-		"SELECT id, email, password_hash, nom, prenom FROM users WHERE email = $1",
+		"SELECT id, email, password_hash, nom, prenom FROM users WHERE email = ?",
 		email,
 	).Scan(&user.ID, &user.Email, &user.PasswordHash, &user.Nom, &user.Prenom)
 
@@ -183,7 +200,7 @@ func CreateQuote(nom, prenom, email, telephone, produit, message string) error {
 	}
 
 	_, err := db.Exec(
-		"INSERT INTO quotes (nom, prenom, email, telephone, produit, message) VALUES ($1, $2, $3, $4, $5, $6)",
+		"INSERT INTO quotes (nom, prenom, email, telephone, produit, message) VALUES (?, ?, ?, ?, ?, ?)",
 		nom, prenom, email, telephone, produit, message,
 	)
 	return err
@@ -222,19 +239,36 @@ func registerHandler(w http.ResponseWriter, r *http.Request) {
 		nom := r.FormValue("nom")
 		prenom := r.FormValue("prenom")
 
-		if email == "" || password == "" {
-			http.Error(w, "Email et mot de passe requis", http.StatusBadRequest)
-			return
+		// Validation
+		errors := make(map[string]string)
+		
+		if email == "" {
+			errors["email"] = "Email requis"
+		}
+		if password == "" {
+			errors["password"] = "Mot de passe requis"
+		}
+		if nom == "" {
+			errors["nom"] = "Nom requis"
+		}
+		if prenom == "" {
+			errors["prenom"] = "Prénom requis"
 		}
 
 		existing, _ := GetUserByEmail(email)
 		if existing != nil {
-			http.Error(w, "Cet email existe déjà", http.StatusBadRequest)
+			errors["email"] = "Cet email existe déjà"
+		}
+
+		// Si erreurs, afficher le formulaire avec erreurs
+		if len(errors) > 0 {
+			registerFormWithErrors(w, email, nom, prenom, errors)
 			return
 		}
 
 		if err := CreateUser(email, password, nom, prenom); err != nil {
-			http.Error(w, "Erreur création compte", http.StatusInternalServerError)
+			errors["general"] = "Erreur création compte"
+			registerFormWithErrors(w, email, nom, prenom, errors)
 			return
 		}
 
@@ -244,73 +278,217 @@ func registerHandler(w http.ResponseWriter, r *http.Request) {
 			Path:  "/",
 		})
 
-		http.Redirect(w, r, "/dashboard", http.StatusSeeOther)
+		http.Redirect(w, r, "/", http.StatusSeeOther)
 	}
 }
 
-func loginHandler(w http.ResponseWriter, r *http.Request) {
-	if r.Method == http.MethodGet {
-		http.ServeFile(w, r, "templates/login.html")
-		return
-	}
-
-	if r.Method == http.MethodPost {
-		email := r.FormValue("email")
-		password := r.FormValue("password")
-
-		user, err := GetUserByEmail(email)
-		if err != nil || user == nil || !VerifyPassword(user.PasswordHash, password) {
-			http.Error(w, "Email ou mot de passe incorrect", http.StatusUnauthorized)
-			return
-		}
-
-		http.SetCookie(w, &http.Cookie{
-			Name:  "user_email",
-			Value: email,
-			Path:  "/",
-		})
-
-		http.Redirect(w, r, "/dashboard", http.StatusSeeOther)
-	}
-}
-
-func logoutHandler(w http.ResponseWriter, r *http.Request) {
-	http.SetCookie(w, &http.Cookie{
-		Name:   "user_email",
-		Value:  "",
-		Path:   "/",
-		MaxAge: -1,
-	})
-	http.Redirect(w, r, "/", http.StatusSeeOther)
-}
-
-func dashboardHandler(w http.ResponseWriter, r *http.Request) {
-	user := GetUserFromSession(r)
-	if user == nil {
-		http.Redirect(w, r, "/login", http.StatusSeeOther)
-		return
-	}
-
+func registerFormWithErrors(w http.ResponseWriter, email, nom, prenom string, errors map[string]string) {
 	html := `<!DOCTYPE html>
 <html lang="fr">
 <head>
 	<meta charset="utf-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
-	<title>Dashboard - MODULSPACE</title>
-	<link rel="stylesheet" href="/static/css/style.css?v=13">
+	<title>Inscription - MODULSPACE</title>
+	<link rel="stylesheet" href="/static/css/style.css?v=31">
+	<style>
+		.auth-container {
+			max-width: 450px;
+			margin: 3rem auto;
+			padding: 2.5rem;
+			background: white;
+			border-radius: 12px;
+			box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+		}
+		.auth-container h2 {
+			text-align: center;
+			color: #6161AB;
+			margin-bottom: 2rem;
+			font-size: 1.8rem;
+		}
+		.form-error {
+			background: #ffebee;
+			border-left: 4px solid #ef5350;
+			color: #c62828;
+			padding: 1rem;
+			border-radius: 4px;
+			margin-bottom: 1.5rem;
+			font-weight: 500;
+			display: flex;
+			align-items: center;
+			gap: 0.5rem;
+		}
+		.form-error::before {
+			content: '⚠';
+			font-size: 1.2rem;
+		}
+		.form-group {
+			margin-bottom: 1.5rem;
+		}
+		.form-group label {
+			display: block;
+			margin-bottom: 0.5rem;
+			font-weight: 600;
+			color: #333;
+		}
+		.form-group input {
+			width: 100%;
+			padding: 0.75rem;
+			border: 2px solid #e0e0e0;
+			border-radius: 6px;
+			font-size: 1rem;
+			box-sizing: border-box;
+			transition: border-color 0.3s;
+		}
+		.form-group input:focus {
+			outline: none;
+			border-color: #6161AB;
+		}
+		.form-group input.error {
+			border-color: #ef5350;
+		}
+		.field-error {
+			display: block;
+			color: #ef5350;
+			font-size: 0.85rem;
+			margin-top: 0.4rem;
+			font-weight: 500;
+		}
+		.btn-submit {
+			width: 100%;
+			padding: 0.9rem;
+			background: #6161AB;
+			color: white;
+			border: none;
+			border-radius: 6px;
+			font-size: 1rem;
+			font-weight: 600;
+			cursor: pointer;
+			transition: all 0.3s;
+		}
+		.btn-submit:hover {
+			background: #4d4d8f;
+			transform: translateY(-2px);
+			box-shadow: 0 4px 12px rgba(97, 97, 171, 0.3);
+		}
+		.auth-link {
+			text-align: center;
+			margin-top: 1.5rem;
+			color: #666;
+		}
+		.auth-link a {
+			color: #6161AB;
+			text-decoration: none;
+			font-weight: 600;
+		}
+		.auth-link a:hover {
+			text-decoration: underline;
+		}
+	</style>
 </head>
 <body>
 	<header class="site-header">
 		<div class="container">
+			<span class="header-welcome">BIENVENUE</span>
 			<img src="/static/img/logo.png" alt="Logo" class="site-logo">
 		</div>
 	</header>
 
-	<main class="container" style="padding: 2rem;">
-		<h1>Bienvenue ` + user.Prenom + `!</h1>
-		<p>Email: ` + user.Email + `</p>
-		<p>Nom: ` + user.Nom + ` ` + user.Prenom + `</p>
-		<a href="/logout" style="padding: 0.5rem 1rem; background: #6161AB; color: white; text-decoration: none; border-radius: 6px;">Déconnexion</a>
+	<div class="sub-banner">
+		<div class="container">
+			<nav>
+				<ul>
+					<li><a href="/">Accueil</a></li>
+					<li><a href="/apropos.html">A Propos</a></li>
+					<li><a href="/produit.html">Produit</a></li>
+					<li><a href="/contact.html">Contact</a></li>
+				</ul>
+			</nav>
+		</div>
+	</div>
+
+	<main class="container">
+		<div class="auth-container">
+			<h2>Inscription</h2>`
+
+	if errors["general"] != "" {
+		html += `<div class="form-error">` + errors["general"] + `</div>`
+	}
+
+	html += `<form method="POST">
+				<div class="form-group">
+					<label for="nom">Nom</label>
+					<input type="text" id="nom" name="nom" value="` + nom + `" class="` + 
+					(func() string {
+						if errors["nom"] != "" {
+							return "error"
+						}
+						return ""
+					})() + `">` + 
+					(func() string {
+						if errors["nom"] != "" {
+							return `<span class="field-error">` + errors["nom"] + `</span>`
+						}
+						return ""
+					})() + `
+				</div>
+
+				<div class="form-group">
+					<label for="prenom">Prénom</label>
+					<input type="text" id="prenom" name="prenom" value="` + prenom + `" class="` + 
+					(func() string {
+						if errors["prenom"] != "" {
+							return "error"
+						}
+						return ""
+					})() + `">` + 
+					(func() string {
+						if errors["prenom"] != "" {
+							return `<span class="field-error">` + errors["prenom"] + `</span>`
+						}
+						return ""
+					})() + `
+				</div>
+
+				<div class="form-group">
+					<label for="email">Email</label>
+					<input type="email" id="email" name="email" value="` + email + `" class="` + 
+					(func() string {
+						if errors["email"] != "" {
+							return "error"
+						}
+						return ""
+					})() + `">` + 
+					(func() string {
+						if errors["email"] != "" {
+							return `<span class="field-error">` + errors["email"] + `</span>`
+						}
+						return ""
+					})() + `
+				</div>
+
+				<div class="form-group">
+					<label for="password">Mot de passe</label>
+					<input type="password" id="password" name="password" class="` + 
+					(func() string {
+						if errors["password"] != "" {
+							return "error"
+						}
+						return ""
+					})() + `">` + 
+					(func() string {
+						if errors["password"] != "" {
+							return `<span class="field-error">` + errors["password"] + `</span>`
+						}
+						return ""
+					})() + `
+				</div>
+
+				<button type="submit" class="btn-submit">S'inscrire</button>
+			</form>
+			<p class="auth-link">
+				Vous avez déjà un compte ? <a href="/login.html">Connectez-vous</a>
+			</p>
+		</div>
 	</main>
 
 	<footer class="site-footer">
@@ -323,9 +501,255 @@ func dashboardHandler(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte(html))
 }
 
+func loginHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method == http.MethodGet {
+		http.ServeFile(w, r, "templates/login.html")
+		return
+	}
+
+	if r.Method == http.MethodPost {
+		email := r.FormValue("email")
+		password := r.FormValue("password")
+
+		errors := make(map[string]string)
+
+		if email == "" {
+			errors["email"] = "Email requis"
+		}
+		if password == "" {
+			errors["password"] = "Mot de passe requis"
+		}
+
+		user, err := GetUserByEmail(email)
+		if err != nil || user == nil || !VerifyPassword(user.PasswordHash, password) {
+			errors["general"] = "Email ou mot de passe incorrect"
+		}
+
+		if len(errors) > 0 {
+			loginFormWithErrors(w, email, errors)
+			return
+		}
+
+		http.SetCookie(w, &http.Cookie{
+			Name:  "user_email",
+			Value: email,
+			Path:  "/",
+		})
+
+		http.Redirect(w, r, "/", http.StatusSeeOther)
+	}
+}
+
+func loginFormWithErrors(w http.ResponseWriter, email string, errors map[string]string) {
+	html := `<!DOCTYPE html>
+<html lang="fr">
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>Connexion - MODULSPACE</title>
+	<link rel="stylesheet" href="/static/css/style.css?v=31">
+	<style>
+		.auth-container {
+			max-width: 450px;
+			margin: 3rem auto;
+			padding: 2.5rem;
+			background: white;
+			border-radius: 12px;
+			box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+		}
+		.auth-container h2 {
+			text-align: center;
+			color: #6161AB;
+			margin-bottom: 2rem;
+			font-size: 1.8rem;
+		}
+		.form-error {
+			background: #ffebee;
+			border-left: 4px solid #ef5350;
+			color: #c62828;
+			padding: 1rem;
+			border-radius: 4px;
+			margin-bottom: 1.5rem;
+			font-weight: 500;
+			display: flex;
+			align-items: center;
+			gap: 0.5rem;
+		}
+		.form-error::before {
+			content: '⚠';
+			font-size: 1.2rem;
+		}
+		.form-group {
+			margin-bottom: 1.5rem;
+		}
+		.form-group label {
+			display: block;
+			margin-bottom: 0.5rem;
+			font-weight: 600;
+			color: #333;
+		}
+		.form-group input {
+			width: 100%;
+			padding: 0.75rem;
+			border: 2px solid #e0e0e0;
+			border-radius: 6px;
+			font-size: 1rem;
+			box-sizing: border-box;
+			transition: border-color 0.3s;
+		}
+		.form-group input:focus {
+			outline: none;
+			border-color: #6161AB;
+		}
+		.form-group input.error {
+			border-color: #ef5350;
+		}
+		.field-error {
+			display: block;
+			color: #ef5350;
+			font-size: 0.85rem;
+			margin-top: 0.4rem;
+			font-weight: 500;
+		}
+		.btn-submit {
+			width: 100%;
+			padding: 0.9rem;
+			background: #6161AB;
+			color: white;
+			border: none;
+			border-radius: 6px;
+			font-size: 1rem;
+			font-weight: 600;
+			cursor: pointer;
+			transition: all 0.3s;
+		}
+		.btn-submit:hover {
+			background: #4d4d8f;
+			transform: translateY(-2px);
+			box-shadow: 0 4px 12px rgba(97, 97, 171, 0.3);
+		}
+		.auth-link {
+			text-align: center;
+			margin-top: 1.5rem;
+			color: #666;
+		}
+		.auth-link a {
+			color: #6161AB;
+			text-decoration: none;
+			font-weight: 600;
+		}
+		.auth-link a:hover {
+			text-decoration: underline;
+		}
+	</style>
+</head>
+<body>
+	<header class="site-header">
+		<div class="container">
+			<span class="header-welcome">BIENVENUE</span>
+			<img src="/static/img/logo.png" alt="Logo" class="site-logo">
+		</div>
+	</header>
+
+	<div class="sub-banner">
+		<div class="container">
+			<nav>
+				<ul>
+					<li><a href="/">Accueil</a></li>
+					<li><a href="/apropos.html">A Propos</a></li>
+					<li><a href="/produit.html">Produit</a></li>
+					<li><a href="/contact.html">Contact</a></li>
+				</ul>
+			</nav>
+		</div>
+	</div>
+
+	<main class="container">
+		<div class="auth-container">
+			<h2>Connexion</h2>`
+
+	if errors["general"] != "" {
+		html += `<div class="form-error">` + errors["general"] + `</div>`
+	}
+
+	html += `<form method="POST">
+				<div class="form-group">
+					<label for="email">Email</label>
+					<input type="email" id="email" name="email" value="` + email + `" class="` + 
+					(func() string {
+						if errors["email"] != "" {
+							return "error"
+						}
+						return ""
+					})() + `">` + 
+					(func() string {
+						if errors["email"] != "" {
+							return `<span class="field-error">` + errors["email"] + `</span>`
+						}
+						return ""
+					})() + `
+				</div>
+
+				<div class="form-group">
+					<label for="password">Mot de passe</label>
+					<input type="password" id="password" name="password" class="` + 
+					(func() string {
+						if errors["password"] != "" {
+							return "error"
+						}
+						return ""
+					})() + `">` + 
+					(func() string {
+						if errors["password"] != "" {
+							return `<span class="field-error">` + errors["password"] + `</span>`
+						}
+						return ""
+					})() + `
+				</div>
+
+				<button type="submit" class="btn-submit">Se connecter</button>
+			</form>
+			<p class="auth-link">
+				Pas encore inscrit ? <a href="/register.html">Créez un compte</a>
+			</p>
+		</div>
+	</main>
+
+	<footer class="site-footer">
+		<div class="container">© 2025 Ydays</div>
+	</footer>
+</body>
+</html>`
+
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+	w.Write([]byte(html))
+}
+
+func logoutHandler(w http.ResponseWriter, r *http.Request) {
+	http.SetCookie(w, &http.Cookie{
+		Name:   "user_email",
+		Value:  "",
+		Path:   "/",
+		MaxAge: -1,
+	})
+	http.Redirect(w, r, "/", http.StatusSeeOther)
+}
+
 func quoteHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	// Vérifier si l'utilisateur est connecté
+	user := GetUserFromSession(r)
+	if user == nil {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusUnauthorized)
+		json.NewEncoder(w).Encode(map[string]string{
+			"status": "error",
+			"message": "Vous devez être connecté pour demander un devis",
+		})
 		return
 	}
 
@@ -410,4 +834,19 @@ func getEnv(key, defaultValue string) string {
 		return defaultValue
 	}
 	return value
+}
+
+func userHandler(w http.ResponseWriter, r *http.Request) {
+	user := GetUserFromSession(r)
+	w.Header().Set("Content-Type", "application/json")
+	if user == nil {
+		w.Write([]byte(`{"loggedIn":false}`))
+		return
+	}
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"loggedIn": true,
+		"email":    user.Email,
+		"prenom":   user.Prenom,
+		"nom":      user.Nom,
+	})
 }

@@ -1,0 +1,58 @@
+{{define "mes-devis.html"}}
+{{template "header" .}}
+
+    <main class="container">
+        <div style="max-width: 900px; margin: 40px auto;">
+            <h1 style="text-align: center; color: #333; margin-bottom: 30px;">Mes Demandes de Devis</h1>
+            
+            {{if .ExtraData.Success}}
+            <div class="success-message" style="background: #d4edda; color: #155724; padding: 15px; border-radius: 5px; margin-bottom: 30px; text-align: center;">
+                ✅ Votre demande de devis a été envoyée avec succès! Nous vous contacterons rapidement.
+            </div>
+            {{end}}
+
+            <div style="text-align: right; margin-bottom: 20px;">
+                <a href="/devis" class="btn-submit" style="display: inline-block; padding: 12px 24px; background-color: #4A90E2; color: white; text-decoration: none; border-radius: 5px;">
+                    ➕ Nouvelle demande de devis
+                </a>
+            </div>
+
+            {{if .ExtraData.Quotes}}
+            <div style="display: grid; gap: 20px;">
+                {{range .ExtraData.Quotes}}
+                <div style="background: white; padding: 25px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+                    <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 15px;">
+                        <h3 style="margin: 0; color: #333;">{{.Subject}}</h3>
+                        {{if eq .Status "pending"}}
+                        <span style="padding: 5px 12px; border-radius: 20px; font-size: 13px; font-weight: 500; background: #fff3cd; color: #856404;">⏳ En attente</span>
+                        {{else if eq .Status "in_review"}}
+                        <span style="padding: 5px 12px; border-radius: 20px; font-size: 13px; font-weight: 500; background: #cfe2ff; color: #084298;">🔍 En révision</span>
+                        {{else if eq .Status "accepted"}}
+                        <span style="padding: 5px 12px; border-radius: 20px; font-size: 13px; font-weight: 500; background: #d1e7dd; color: #0f5132;">✅ Accepté</span>
+                        {{else if eq .Status "rejected"}}
+                        <span style="padding: 5px 12px; border-radius: 20px; font-size: 13px; font-weight: 500; background: #f8d7da; color: #842029;">❌ Refusé</span>
+                        {{end}}
+                    </div>
+                    <p style="color: #666; margin: 10px 0;">{{.Description}}</p>
+                    <div style="display: flex; justify-content: space-between; margin-top: 15px; font-size: 14px; color: #888;">
+                        <span>📅 {{.CreatedAt}}</span>
+                        {{if .Budget}}
+                        <span>💰 Budget: {{.Budget}}€</span>
+                        {{end}}
+                    </div>
+                </div>
+                {{end}}
+            </div>
+            {{else}}
+            <div style="text-align: center; padding: 60px 20px; background: white; border-radius: 10px;">
+                <p style="color: #999; font-size: 18px;">📋 Vous n'avez pas encore de demande de devis</p>
+                <a href="/devis" style="display: inline-block; margin-top: 20px; padding: 12px 24px; background-color: #4A90E2; color: white; text-decoration: none; border-radius: 5px;">
+                    Créer ma première demande
+                </a>
+            </div>
+            {{end}}
+        </div>
+    </main>
+
+{{template "footer" .}}
+{{end}}

@@ -13,8 +13,14 @@
         <div class="container">
             <img src="/static/img/logo.png" alt="Logo MODULSPACE" class="site-logo">
             <div class="header-auth-buttons">
-                <a href="/login.html" class="header-auth-btn login">Connexion</a>
-                <a href="/register.html" class="header-auth-btn">Inscription</a>
+                <div id="auth-guest" class="auth-guest">
+                    <a href="/login.html" class="header-auth-btn login">Connexion</a>
+                    <a href="/register.html" class="header-auth-btn">Inscription</a>
+                </div>
+                <div id="auth-user" class="auth-user" style="display:none;">
+                    <span class="user-name" id="user-prenom"></span>
+                    <a href="/logout" class="header-auth-btn">Déconnexion</a>
+                </div>
             </div>
         </div>
     </header>
@@ -103,5 +109,6 @@
         </div>
     </section>
 
+    <script src="/static/js/auth.js"></script>
 </body>
 </html>
