@@ -1,3 +1,4 @@
+/* filepath: c:\Users\dylan\OneDrive\Desktop\YNOV\YDays\Modul-space\static\css\style.css */
 /* ================================ */
 /* Style minimal pour la base du site */
 /* ================================ */
@@ -721,6 +722,9 @@ main.container {
     transition: transform 0.2s ease, box-shadow 0.2s ease, background-color 0.3s ease;
     font-size: 1.05rem;
     font-weight: 600;
+    border: none;
+    cursor: pointer;
+    text-decoration: none;
 }
 
 .detail-cta:hover {
@@ -733,7 +737,45 @@ main.container {
     transform: translateY(0);
 }
 
+/* Actions produit : 2 boutons de même largeur */
+.detail-actions {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(220px, 1fr));
+    gap: 0.8rem;
+    margin-top: 0.5rem;
+    width: 100%;
+    max-width: 760px;
+}
+
+.detail-actions .detail-cta {
+    width: 100%;
+    min-height: 56px;
+    padding: 0.95rem 1rem;
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    box-sizing: border-box;
+}
+
+.detail-cta-secondary {
+    background-color: #4a4a8a;
+    color: var(--text-light);
+}
+
+.detail-cta-secondary:hover {
+    background-color: #3f3f77;
+}
+
+/* Mobile: empile les boutons */
+@media (max-width: 700px) {
+    .detail-actions {
+        grid-template-columns: 1fr;
+    }
+}
+
 /* Responsive adjustments for products */
+
 @media (max-width: 900px) {
     .products-grid {
         grid-template-columns: repeat(2, 1fr);
@@ -819,7 +861,7 @@ main.container {
     transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
-.feature-item:hover {
+feature-item:hover {
     transform: translateY(-8px);
     box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
 }
@@ -1076,7 +1118,7 @@ main.container {
     font-size: 1.3rem;
 }
 
-.contact-card a {
+contact-card a {
     color: var(--text-dark);
     text-decoration: none;
     font-weight: 600;
@@ -1086,7 +1128,7 @@ main.container {
     transition: color 0.2s;
 }
 
-.contact-card a:hover {
+contact-card a:hover {
     color: var(--subbanner);
 }
 

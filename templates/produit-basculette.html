@@ -4,14 +4,18 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Basculette - MODULSPACE</title>
-    <link rel="stylesheet" href="/static/css/style.css?v=13">
+    <link rel="stylesheet" href="/static/css/style.css?v=12">
     <link rel="icon" href="/static/favicon.ico">
 </head>
 <body>
 
     <header class="site-header">
         <div class="container">
-            <img src="/static/img/logo.png" alt="Logo MODULSPACE">
+            <img src="/static/img/logo.png" alt="Logo MODULSPACE" class="site-logo">
+            <div class="header-auth-buttons">
+                <a href="/login.html" class="header-auth-btn login">Connexion</a>
+                <a href="/register.html" class="header-auth-btn">Inscription</a>
+            </div>
         </div>
     </header>
 
@@ -20,8 +24,8 @@
             <nav>
                 <ul>
                     <li><a href="/">Accueil</a></li>
-                    <li><a href="/produits.html">Produits</a></li>
-                    <li><a href="/a-propos.html">À propos</a></li>
+                    <li><a href="/apropos.html">A Propos</a></li>
+                    <li><a href="/produit.html">Produit</a></li>
                     <li><a href="/contact.html">Contact</a></li>
                 </ul>
             </nav>
@@ -31,50 +35,59 @@
     <main class="container">
         <section class="product-detail">
             <div class="product-hero">
-                <img src="/static/img/basculette.png" alt="Produit Basculette">
+                <img src="/img/basculette_img1.png" alt="Basculette - Cheval à bascule">
+                <img src="/img/IMG-20260115-WA0010.jpg" alt="Basculette - Cheval à bascule">
             </div>
-
             <div class="product-info">
                 <h1>Basculette</h1>
-
                 <div class="product-meta">
-                    <span class="product-meta-item">Modulable</span>
+                    <span class="product-tag">Modulable</span>
                     <span class="product-meta-item">3 configurations</span>
                     <span class="product-meta-item">Livraison 4-6 semaines</span>
                 </div>
-
-                <p>
-                    La Basculette est un meuble modulable qui bascule d'une position à l'autre pour suivre vos usages :
-                    assise, table basse, cheval à bascule...
-                    Compacte et robuste, elle optimise l'espace sans sacrifier le confort.
-                </p>
-
+                <p>La Basculette est un meuble modulable qui bascule d'une position à l'autre pour suivre vos usages : assise, table basse, cheval a bascule... Compacte et robuste, elle optimise l'espace sans sacrifier le confort.</p>
                 <ul class="detail-list">
                     <li>Structure en bois durable, charnières sécurisées et silencieuses</li>
                     <li>Trois positions rapides : assise, tablette, cheval à bascule</li>
-                    <li>Finitions personnalisables (teintes)</li>
+                    <li>Finitions personnalisables ( teintes )</li>
+                    <li> </li>
                 </ul>
+                <button class="detail-cta open-quote-modal" data-product="Basculette">Demander un devis</button>
+            </div>
+        </section>
 
-                <div class="detail-actions">
-                    <button class="detail-cta open-quote-modal" data-product="Basculette" type="button">
-                        Demander un devis
-                    </button>
-                    <a class="detail-cta detail-cta-secondary" href="/static/docs/basculette-fiche.pdf" download>
-                        Télécharger la fiche
-                    </a>
+        <!-- Product Features Gallery -->
+        <section class="product-features">
+            <h2>Découvrez les 3 configurations</h2>
+            <div class="features-grid">
+                <div class="feature-item">
+                    <img src="/img/IMG-20260115-WA0011.jpg" alt="Basculette - Cheval à bascule">
+                    <h3>Cheval  a Bascule</h3>
+                    <p>Mode détente et jeu. Parfait pour se relaxer ou divertir les enfants en toute sécurité.</p>
+                </div>
+                <div class="feature-item">
+                    <img src="/img/IMG-20260115-WA0010.jpg" alt="Basculette - Table">
+                    <h3>Table</h3>
+                    <p>Transformée en table basse pratique pour le repas, le travail ou la décoration.</p>
+                </div>
+                <div class="feature-item">
+                    <img src="/img/IMG-20260115-WA0009.jpg" alt="Basculette - Assise">
+                    <h3>Assise</h3>
+                    <p>Mode assise confortable pour un vrai siège au quotidien, dans votre salon ou bureau.</p>
                 </div>
             </div>
         </section>
     </main>
 
     <footer class="site-footer">
-        <div class="container">© 2026 MODULSPACE</div>
+        <div class="container">© 2025 Ydays</div>
     </footer>
 
     <section class="contact-banner">
         <div class="container">
-            <div class="contact-item">contact@modulspace.fr</div>
-            <div class="contact-item">+33 6 00 00 00 00</div>
+            <div class="contact-item">Téléphone : <a href="tel:+33000000000">+33 0 00 00 00 00</a></div>
+            <div class="contact-item">Email : <a href="mailto:contact@modulspace.fr">contact@modulspace.fr</a></div>
+            <div class="contact-item">Adresse : 123 Rue Exemple, 75000 Paris</div>
         </div>
     </section>
 
@@ -82,32 +95,34 @@
     <div id="quoteModal" class="quote-modal">
         <div class="quote-modal-content">
             <div class="quote-modal-header">
-                <h2>Demande de devis</h2>
-                <button type="button" class="quote-modal-close" aria-label="Fermer">×</button>
+                <h2>Demande de devis - <span id="modalProductTitle"></span></h2>
+                <button class="quote-modal-close">&times;</button>
             </div>
             <div class="quote-modal-body">
-                <p>Remplissez le formulaire pour recevoir votre devis.</p>
+                <p>Remplissez le formulaire ci-dessous pour recevoir un devis personnalisé.</p>
                 <form id="quoteForm">
+                    <input type="hidden" id="productName" name="productName">
+
                     <div class="quote-form-group">
-                        <label for="quoteNom">Nom <span class="quote-form-required">*</span></label>
-                        <input id="quoteNom" name="nom" type="text" required>
+                        <label for="nom">Nom <span class="quote-form-required">*</span></label>
+                        <input type="text" id="nom" name="nom" required>
                     </div>
+
                     <div class="quote-form-group">
-                        <label for="quotePrenom">Prénom <span class="quote-form-required">*</span></label>
-                        <input id="quotePrenom" name="prenom" type="text" required>
+                        <label for="prenom">Prénom <span class="quote-form-required">*</span></label>
+                        <input type="text" id="prenom" name="prenom" required>
                     </div>
+
                     <div class="quote-form-group">
-                        <label for="quoteEmail">Email <span class="quote-form-required">*</span></label>
-                        <input id="quoteEmail" name="email" type="email" required>
+                        <label for="email">Email <span class="quote-form-required">*</span></label>
+                        <input type="email" id="email" name="email" required>
                     </div>
+
                     <div class="quote-form-group">
-                        <label for="quoteTelephone">Téléphone</label>
-                        <input id="quoteTelephone" name="telephone" type="tel">
+                        <label for="telephone">Téléphone</label>
+                        <input type="tel" id="telephone" name="telephone">
                     </div>
-                    <div class="quote-form-group">
-                        <label for="quoteProduit">Produit</label>
-                        <input id="quoteProduit" name="produit" type="text" value="Basculette" readonly>
-                    </div>
+
                     <button type="submit" class="quote-form-submit">Envoyer la demande</button>
                 </form>
             </div>
