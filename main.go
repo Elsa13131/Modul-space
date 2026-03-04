@@ -7,6 +7,7 @@ import (
 	"log"
 	"net/http"
 	"net/smtp"
+	"net/url"
 	"os"
 	"path/filepath"
 	"strings"
@@ -52,6 +53,7 @@ func InitDB() error {
 	var err error
 	postgresDSN := os.Getenv("DATABASE_URL")
 	if postgresDSN != "" {
+		postgresDSN = normalizePostgresDSN(postgresDSN)
 		dbDriver = "postgres"
 		db, err = sql.Open("postgres", postgresDSN)
 		if err != nil {
@@ -100,6 +102,23 @@ func InitDB() error {
 	log.Println("✅ Connecté à MySQL local")
 	log.Println("✅ Tables users et quotes créées/vérifiées")
 	return nil
+}
+
+func normalizePostgresDSN(dsn string) string {
+	parsed, err := url.Parse(dsn)
+	if err != nil {
+		return dsn
+	}
+
+	query := parsed.Query()
+	sslMode := strings.ToLower(query.Get("sslmode"))
+	if sslMode == "prefer" {
+		query.Set("sslmode", "require")
+		parsed.RawQuery = query.Encode()
+		log.Println("ℹ️ sslmode=prefer détecté, remplacé par sslmode=require pour PostgreSQL")
+	}
+
+	return parsed.String()
 }
 
 func createTablesMySQL() error {
