@@ -1,0 +1,10 @@
+# Environment files
+.env
+.env.*
+!.env.example
+
+# Go build binaries (Windows)
+*.exe
+
+# Optional Go binary outputs
+bin/

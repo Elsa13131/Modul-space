@@ -11,14 +11,18 @@ import (
 	"path/filepath"
 	"strings"
 
-	_ "modernc.org/sqlite"
+	"github.com/joho/godotenv"
 	_ "github.com/go-sql-driver/mysql"
+	_ "github.com/lib/pq"
 	"golang.org/x/crypto/bcrypt"
 )
 
 var db *sql.DB
+var dbDriver string
 
 func main() {
+	_ = godotenv.Load()
+
 	if err := InitDB(); err != nil {
 		log.Printf("⚠️ Erreur DB: %v", err)
 	}
@@ -43,37 +47,63 @@ func main() {
 	log.Fatal(http.ListenAndServe(":"+port, mux))
 }
 
-// InitDB initialise la base de données MySQL
+// InitDB initialise la base de données PostgreSQL (Scalingo) ou MySQL local en fallback
 func InitDB() error {
 	var err error
-	// Connexion d'abord sans base de données pour la créer
-	dsn := "root:@tcp(localhost:3306)/?parseTime=true"
-	tempDB, err := sql.Open("mysql", dsn)
+	postgresDSN := os.Getenv("DATABASE_URL")
+	if postgresDSN != "" {
+		dbDriver = "postgres"
+		db, err = sql.Open("postgres", postgresDSN)
+		if err != nil {
+			return fmt.Errorf("erreur connexion PostgreSQL: %v", err)
+		}
+
+		if err = db.Ping(); err != nil {
+			return fmt.Errorf("erreur ping PostgreSQL: %v", err)
+		}
+
+		if err := createTablesPostgres(); err != nil {
+			return err
+		}
+
+		log.Println("✅ Connecté à PostgreSQL (DATABASE_URL)")
+		log.Println("✅ Tables users et quotes créées/vérifiées")
+		return nil
+	}
+
+	dbDriver = "mysql"
+	rootDSN := getEnv("MYSQL_ROOT_DSN", "root:@tcp(localhost:3306)/?parseTime=true")
+	tempDB, err := sql.Open("mysql", rootDSN)
 	if err != nil {
 		return fmt.Errorf("erreur connexion MySQL: %v", err)
 	}
 	defer tempDB.Close()
 
-	// Créer la base de données si elle n'existe pas
 	if _, err := tempDB.Exec("CREATE DATABASE IF NOT EXISTS modulspace"); err != nil {
 		return fmt.Errorf("erreur création base de données: %v", err)
 	}
 
-	// Maintenant se connecter à la base de données modulspace
-	dsn = "root:@tcp(localhost:3306)/modulspace?parseTime=true"
-	db, err = sql.Open("mysql", dsn)
+	mysqlDSN := getEnv("MYSQL_DSN", "root:@tcp(localhost:3306)/modulspace?parseTime=true")
+	db, err = sql.Open("mysql", mysqlDSN)
 	if err != nil {
 		return fmt.Errorf("erreur connexion MySQL modulspace: %v", err)
 	}
 
 	if err = db.Ping(); err != nil {
-		return fmt.Errorf("erreur ping: %v", err)
+		return fmt.Errorf("erreur ping MySQL: %v", err)
 	}
 
-	log.Println("✅ Connecté à MySQL")
+	if err := createTablesMySQL(); err != nil {
+		return err
+	}
 
-	// Créer table users
-	query1 := `
+	log.Println("✅ Connecté à MySQL local")
+	log.Println("✅ Tables users et quotes créées/vérifiées")
+	return nil
+}
+
+func createTablesMySQL() error {
+	queryUsers := `
 	CREATE TABLE IF NOT EXISTS users (
 		id INT AUTO_INCREMENT PRIMARY KEY,
 		email VARCHAR(255) UNIQUE NOT NULL,
@@ -83,12 +113,11 @@ func InitDB() error {
 		created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 	)`
 
-	if _, err := db.Exec(query1); err != nil {
+	if _, err := db.Exec(queryUsers); err != nil {
 		return fmt.Errorf("erreur création table users: %v", err)
 	}
 
-	// Créer table quotes
-	query2 := `
+	queryQuotes := `
 	CREATE TABLE IF NOT EXISTS quotes (
 		id INT AUTO_INCREMENT PRIMARY KEY,
 		nom VARCHAR(100) NOT NULL,
@@ -100,11 +129,44 @@ func InitDB() error {
 		created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 	)`
 
-	if _, err := db.Exec(query2); err != nil {
+	if _, err := db.Exec(queryQuotes); err != nil {
 		return fmt.Errorf("erreur création table quotes: %v", err)
 	}
 
-	log.Println("✅ Tables users et quotes créées/vérifiées")
+	return nil
+}
+
+func createTablesPostgres() error {
+	queryUsers := `
+	CREATE TABLE IF NOT EXISTS users (
+		id SERIAL PRIMARY KEY,
+		email VARCHAR(255) UNIQUE NOT NULL,
+		password_hash VARCHAR(255) NOT NULL,
+		nom VARCHAR(100),
+		prenom VARCHAR(100),
+		created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+	)`
+
+	if _, err := db.Exec(queryUsers); err != nil {
+		return fmt.Errorf("erreur création table users: %v", err)
+	}
+
+	queryQuotes := `
+	CREATE TABLE IF NOT EXISTS quotes (
+		id SERIAL PRIMARY KEY,
+		nom VARCHAR(100) NOT NULL,
+		prenom VARCHAR(100) NOT NULL,
+		email VARCHAR(255) NOT NULL,
+		telephone VARCHAR(20),
+		produit VARCHAR(255) NOT NULL,
+		message TEXT,
+		created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+	)`
+
+	if _, err := db.Exec(queryQuotes); err != nil {
+		return fmt.Errorf("erreur création table quotes: %v", err)
+	}
+
 	return nil
 }
 
@@ -135,7 +197,12 @@ func CreateUser(email, password, nom, prenom string) error {
 	}
 
 	_, err = db.Exec(
-		"INSERT INTO users (email, password_hash, nom, prenom) VALUES (?, ?, ?, ?)",
+		func() string {
+			if dbDriver == "postgres" {
+				return "INSERT INTO users (email, password_hash, nom, prenom) VALUES ($1, $2, $3, $4)"
+			}
+			return "INSERT INTO users (email, password_hash, nom, prenom) VALUES (?, ?, ?, ?)"
+		}(),
 		email, string(hashedPassword), nom, prenom,
 	)
 	if err != nil {
@@ -152,7 +219,12 @@ func GetUserByEmail(email string) (*User, error) {
 
 	user := &User{}
 	err := db.QueryRow(
-		"SELECT id, email, password_hash, nom, prenom FROM users WHERE email = ?",
+		func() string {
+			if dbDriver == "postgres" {
+				return "SELECT id, email, password_hash, nom, prenom FROM users WHERE email = $1"
+			}
+			return "SELECT id, email, password_hash, nom, prenom FROM users WHERE email = ?"
+		}(),
 		email,
 	).Scan(&user.ID, &user.Email, &user.PasswordHash, &user.Nom, &user.Prenom)
 
@@ -200,7 +272,12 @@ func CreateQuote(nom, prenom, email, telephone, produit, message string) error {
 	}
 
 	_, err := db.Exec(
-		"INSERT INTO quotes (nom, prenom, email, telephone, produit, message) VALUES (?, ?, ?, ?, ?, ?)",
+		func() string {
+			if dbDriver == "postgres" {
+				return "INSERT INTO quotes (nom, prenom, email, telephone, produit, message) VALUES ($1, $2, $3, $4, $5, $6)"
+			}
+			return "INSERT INTO quotes (nom, prenom, email, telephone, produit, message) VALUES (?, ?, ?, ?, ?, ?)"
+		}(),
 		nom, prenom, email, telephone, produit, message,
 	)
 	return err
