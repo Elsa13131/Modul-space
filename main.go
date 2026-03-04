@@ -1,15 +1,18 @@
 package main
 
 import (
+	"crypto/subtle"
 	"database/sql"
 	"encoding/json"
 	"fmt"
+	"html"
 	"log"
 	"net/http"
 	"net/smtp"
 	"net/url"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
 
 	"github.com/joho/godotenv"
@@ -36,6 +39,8 @@ func main() {
 	mux.HandleFunc("/logout", logoutHandler)
 	mux.HandleFunc("/api/quote", quoteHandler)
 	mux.HandleFunc("/api/user", userHandler)
+	mux.HandleFunc("/admin", adminHandler)
+	mux.HandleFunc("/admin/delete-user", adminDeleteUserHandler)
 	mux.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("static"))))
 	mux.Handle("/img/", http.StripPrefix("/img/", http.FileServer(http.Dir("static/img"))))
 	mux.Handle("/fonts/", http.StripPrefix("/fonts/", http.FileServer(http.Dir("fonts"))))
@@ -55,22 +60,26 @@ func InitDB() error {
 	if postgresDSN != "" {
 		postgresDSN = normalizePostgresDSN(postgresDSN)
 		dbDriver = "postgres"
-		db, err = sql.Open("postgres", postgresDSN)
-		if err != nil {
-			return fmt.Errorf("erreur connexion PostgreSQL: %v", err)
+		postgresDB, openErr := sql.Open("postgres", postgresDSN)
+		if openErr == nil {
+			if pingErr := postgresDB.Ping(); pingErr == nil {
+				db = postgresDB
+				migrateErr := createTablesPostgres()
+				if migrateErr == nil {
+					log.Println("✅ Connecté à PostgreSQL (DATABASE_URL)")
+					log.Println("✅ Tables users et quotes créées/vérifiées")
+					return nil
+				}
+				log.Printf("⚠️ Erreur DB PostgreSQL (migrations): %v", migrateErr)
+			} else {
+				log.Printf("⚠️ Erreur DB PostgreSQL (ping): %v", pingErr)
+			}
+			_ = postgresDB.Close()
+		} else {
+			log.Printf("⚠️ Erreur DB PostgreSQL (open): %v", openErr)
 		}
 
-		if err = db.Ping(); err != nil {
-			return fmt.Errorf("erreur ping PostgreSQL: %v", err)
-		}
-
-		if err := createTablesPostgres(); err != nil {
-			return err
-		}
-
-		log.Println("✅ Connecté à PostgreSQL (DATABASE_URL)")
-		log.Println("✅ Tables users et quotes créées/vérifiées")
-		return nil
+		log.Println("ℹ️ Fallback vers MySQL local")
 	}
 
 	dbDriver = "mysql"
@@ -300,6 +309,269 @@ func CreateQuote(nom, prenom, email, telephone, produit, message string) error {
 		nom, prenom, email, telephone, produit, message,
 	)
 	return err
+}
+
+type AdminUserEntry struct {
+	ID        int
+	Email     string
+	Nom       string
+	Prenom    string
+	CreatedAt string
+}
+
+type AdminQuoteEntry struct {
+	ID        int
+	Nom       string
+	Prenom    string
+	Email     string
+	Telephone string
+	Produit   string
+	Message   string
+	CreatedAt string
+}
+
+func listAdminUsers() ([]AdminUserEntry, error) {
+	if db == nil {
+		return nil, fmt.Errorf("base de données non configurée")
+	}
+
+	rows, err := db.Query("SELECT id, email, nom, prenom, created_at FROM users ORDER BY created_at DESC, id DESC")
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	users := make([]AdminUserEntry, 0)
+	for rows.Next() {
+		var user AdminUserEntry
+		var nom sql.NullString
+		var prenom sql.NullString
+		var createdAt sql.NullTime
+
+		if err := rows.Scan(&user.ID, &user.Email, &nom, &prenom, &createdAt); err != nil {
+			return nil, err
+		}
+
+		user.Nom = nom.String
+		user.Prenom = prenom.String
+		if createdAt.Valid {
+			user.CreatedAt = createdAt.Time.Format("2006-01-02 15:04")
+		} else {
+			user.CreatedAt = "-"
+		}
+
+		users = append(users, user)
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return users, nil
+}
+
+func listAdminQuotes() ([]AdminQuoteEntry, error) {
+	if db == nil {
+		return nil, fmt.Errorf("base de données non configurée")
+	}
+
+	rows, err := db.Query("SELECT id, nom, prenom, email, telephone, produit, message, created_at FROM quotes ORDER BY created_at DESC, id DESC")
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	quotes := make([]AdminQuoteEntry, 0)
+	for rows.Next() {
+		var quote AdminQuoteEntry
+		var telephone sql.NullString
+		var message sql.NullString
+		var createdAt sql.NullTime
+
+		if err := rows.Scan(&quote.ID, &quote.Nom, &quote.Prenom, &quote.Email, &telephone, &quote.Produit, &message, &createdAt); err != nil {
+			return nil, err
+		}
+
+		quote.Telephone = telephone.String
+		quote.Message = message.String
+		if createdAt.Valid {
+			quote.CreatedAt = createdAt.Time.Format("2006-01-02 15:04")
+		} else {
+			quote.CreatedAt = "-"
+		}
+
+		quotes = append(quotes, quote)
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return quotes, nil
+}
+
+func deleteUserByID(userID int) error {
+	if db == nil {
+		return fmt.Errorf("base de données non configurée")
+	}
+
+	_, err := db.Exec(
+		func() string {
+			if dbDriver == "postgres" {
+				return "DELETE FROM users WHERE id = $1"
+			}
+			return "DELETE FROM users WHERE id = ?"
+		}(),
+		userID,
+	)
+
+	return err
+}
+
+func requireAdminAuth(w http.ResponseWriter, r *http.Request) bool {
+	adminUsername := os.Getenv("ADMIN_USERNAME")
+	adminPassword := os.Getenv("ADMIN_PASSWORD")
+
+	if adminUsername == "" || adminPassword == "" {
+		http.Error(w, "Admin non configuré (ADMIN_USERNAME / ADMIN_PASSWORD)", http.StatusInternalServerError)
+		return false
+	}
+
+	username, password, ok := r.BasicAuth()
+	usernameOk := subtle.ConstantTimeCompare([]byte(username), []byte(adminUsername)) == 1
+	passwordOk := subtle.ConstantTimeCompare([]byte(password), []byte(adminPassword)) == 1
+
+	if !ok || !usernameOk || !passwordOk {
+		w.Header().Set("WWW-Authenticate", `Basic realm="Modul-space Admin"`)
+		http.Error(w, "Accès non autorisé", http.StatusUnauthorized)
+		return false
+	}
+
+	return true
+}
+
+func renderAdminErrorPage(w http.ResponseWriter, title, details string, status int) {
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+	w.WriteHeader(status)
+
+	safeTitle := html.EscapeString(title)
+	safeDetails := html.EscapeString(details)
+
+	w.Write([]byte(`<!DOCTYPE html><html lang="fr"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Admin Modul-space</title><link rel="stylesheet" href="/static/css/style.css?v=31"><style>
+	.admin-wrap{max-width:1100px;margin:30px auto;padding:0 16px}
+	.admin-card{background:#fff;border-radius:12px;padding:20px;box-shadow:0 4px 14px rgba(0,0,0,.08)}
+	.err{color:#b91c1c;font-weight:700;margin-bottom:8px}
+	.meta{color:#6b7280;font-size:14px}
+	</style></head><body>
+	<header class="site-header"><div class="container"><span class="header-welcome">ADMIN</span><img src="/static/img/logo.png" alt="Logo" class="site-logo"></div></header>
+	<div class="admin-wrap"><div class="admin-card"><div class="err">` + safeTitle + `</div><div class="meta">` + safeDetails + `</div></div></div>
+	</body></html>`))
+}
+
+func adminHandler(w http.ResponseWriter, r *http.Request) {
+	if r.URL.Path != "/admin" {
+		http.NotFound(w, r)
+		return
+	}
+
+	if !requireAdminAuth(w, r) {
+		return
+	}
+
+	users, err := listAdminUsers()
+	if err != nil {
+		log.Printf("Erreur récupération utilisateurs (admin): %v", err)
+		renderAdminErrorPage(w, "Erreur récupération utilisateurs", err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	quotes, err := listAdminQuotes()
+	if err != nil {
+		log.Printf("Erreur récupération devis (admin): %v", err)
+		renderAdminErrorPage(w, "Erreur récupération devis", err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+	var builder strings.Builder
+	builder.WriteString(`<!DOCTYPE html><html lang="fr"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Admin Modul-space</title><link rel="stylesheet" href="/static/css/style.css?v=31"><style>
+	body{font-family:Arial,sans-serif;background:#f7f7fb;margin:0;color:#1f2937}
+	.admin-wrap{max-width:1200px;margin:24px auto;padding:0 16px}
+	h1{margin-bottom:8px}
+	h2{margin-top:30px}
+	.card{background:#fff;border-radius:10px;padding:16px;box-shadow:0 2px 8px rgba(0,0,0,.08);margin-bottom:16px}
+	table{width:100%;border-collapse:collapse;background:#fff}
+	th,td{border:1px solid #e5e7eb;padding:10px;vertical-align:top;text-align:left;font-size:14px}
+	th{background:#f3f4f6}
+	button{background:#b91c1c;color:#fff;border:none;padding:7px 10px;border-radius:6px;cursor:pointer}
+	.meta{color:#6b7280;margin:0 0 14px}
+	.small{font-size:12px;color:#6b7280}
+	</style></head><body>
+	<header class="site-header"><div class="container"><span class="header-welcome">ADMIN</span><img src="/static/img/logo.png" alt="Logo" class="site-logo"></div></header>
+	<div class="sub-banner"><div class="container"><nav><ul><li><a href="/">Accueil</a></li><li><a href="/admin">Admin</a></li></ul></nav></div></div>
+	<div class="admin-wrap">`)
+	builder.WriteString(fmt.Sprintf(`<div class="card"><h1>Dashboard Admin</h1><p class="meta">%d utilisateurs • %d devis</p><div class="small">Accès privé via /admin uniquement</div></div>`, len(users), len(quotes)))
+
+	builder.WriteString(`<div class="card"><h2>Utilisateurs</h2><table><thead><tr><th>ID</th><th>Email</th><th>Nom</th><th>Prénom</th><th>Créé le</th><th>Action</th></tr></thead><tbody>`)
+	for _, user := range users {
+		builder.WriteString(`<tr>`)
+		builder.WriteString(fmt.Sprintf(`<td>%d</td>`, user.ID))
+		builder.WriteString(fmt.Sprintf(`<td>%s</td>`, html.EscapeString(user.Email)))
+		builder.WriteString(fmt.Sprintf(`<td>%s</td>`, html.EscapeString(user.Nom)))
+		builder.WriteString(fmt.Sprintf(`<td>%s</td>`, html.EscapeString(user.Prenom)))
+		builder.WriteString(fmt.Sprintf(`<td>%s</td>`, html.EscapeString(user.CreatedAt)))
+		builder.WriteString(fmt.Sprintf(`<td><form method="POST" action="/admin/delete-user" onsubmit="return confirm('Supprimer cet utilisateur ?');"><input type="hidden" name="id" value="%d"><button type="submit">Supprimer</button></form></td>`, user.ID))
+		builder.WriteString(`</tr>`)
+	}
+	if len(users) == 0 {
+		builder.WriteString(`<tr><td colspan="6" class="small">Aucun utilisateur</td></tr>`)
+	}
+	builder.WriteString(`</tbody></table></div>`)
+
+	builder.WriteString(`<div class="card"><h2>Demandes de devis</h2><table><thead><tr><th>ID</th><th>Nom</th><th>Prénom</th><th>Email</th><th>Téléphone</th><th>Produit</th><th>Message</th><th>Créé le</th></tr></thead><tbody>`)
+	for _, quote := range quotes {
+		builder.WriteString(`<tr>`)
+		builder.WriteString(fmt.Sprintf(`<td>%d</td>`, quote.ID))
+		builder.WriteString(fmt.Sprintf(`<td>%s</td>`, html.EscapeString(quote.Nom)))
+		builder.WriteString(fmt.Sprintf(`<td>%s</td>`, html.EscapeString(quote.Prenom)))
+		builder.WriteString(fmt.Sprintf(`<td>%s</td>`, html.EscapeString(quote.Email)))
+		builder.WriteString(fmt.Sprintf(`<td>%s</td>`, html.EscapeString(quote.Telephone)))
+		builder.WriteString(fmt.Sprintf(`<td>%s</td>`, html.EscapeString(quote.Produit)))
+		builder.WriteString(fmt.Sprintf(`<td>%s</td>`, html.EscapeString(quote.Message)))
+		builder.WriteString(fmt.Sprintf(`<td>%s</td>`, html.EscapeString(quote.CreatedAt)))
+		builder.WriteString(`</tr>`)
+	}
+	if len(quotes) == 0 {
+		builder.WriteString(`<tr><td colspan="8" class="small">Aucune demande de devis</td></tr>`)
+	}
+	builder.WriteString(`</tbody></table></div>`)
+	builder.WriteString(`</div></body></html>`)
+
+	w.Write([]byte(builder.String()))
+}
+
+func adminDeleteUserHandler(w http.ResponseWriter, r *http.Request) {
+	if !requireAdminAuth(w, r) {
+		return
+	}
+
+	if r.Method != http.MethodPost {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	userID, err := strconv.Atoi(r.FormValue("id"))
+	if err != nil || userID <= 0 {
+		http.Error(w, "ID utilisateur invalide", http.StatusBadRequest)
+		return
+	}
+
+	if err := deleteUserByID(userID); err != nil {
+		http.Error(w, "Erreur suppression utilisateur", http.StatusInternalServerError)
+		return
+	}
+
+	http.Redirect(w, r, "/admin", http.StatusSeeOther)
 }
 
 // Handlers
