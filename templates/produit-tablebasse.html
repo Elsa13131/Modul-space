@@ -1,0 +1,162 @@
+<!doctype html>
+<html lang="fr">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>MIC - MODULSPACE</title>
+    <link rel="stylesheet" href="/static/css/style.css?v=12">
+    <link rel="icon" href="/static/favicon.ico">
+</head>
+<body>
+
+    <header class="site-header">
+        <div class="container">
+            <img src="/static/img/logo.png" alt="Logo MODULSPACE" class="site-logo">
+            <div class="header-auth-buttons">
+                <div id="auth-guest" class="auth-guest">
+                    <a href="/login.html" class="header-auth-btn login">Connexion</a>
+                    <a href="/register.html" class="header-auth-btn">Inscription</a>
+                </div>
+                <div id="auth-user" class="auth-user" style="display:none;">
+                    <span class="user-name" id="user-prenom"></span>
+                    <a href="/logout" class="header-auth-btn">Déconnexion</a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="sub-banner">
+        <div class="container">
+            <nav>
+                <ul>
+                    <li><a href="/">Accueil</a></li>
+                    <li><a href="/apropos.html">À Propos</a></li>
+                    <li><a href="/produit.html">Produit</a></li>
+                    <li><a href="/contact.html">Contact</a></li>
+                </ul>
+            </nav>
+        </div>
+    </div>
+
+    <main class="container mic-page">
+        <section class="product-detail">
+            <div class="product-visual">
+                <div class="product-hero">
+                    <img src="/img/img-tablebasse3.png" alt="MIC - vue 1">
+                </div>
+                <div class="novadesk-side-block">
+                    <h3>Pourquoi adopter le MIC ?</h3>
+                    <ul class="detail-list">
+                        <li><strong>Polyvalence totale :</strong> Passez d'une configuration nuit à une configuration salon en quelques secondes.</li>
+                        <li><strong>Matériaux d'exception :</strong> Entièrement réalisé en noyer, une essence noble réputée pour sa durabilité.</li>
+                        <li><strong>Optimisation de l'espace :</strong> Un meuble double fonction qui évite l'encombrement inutile.</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="product-info">
+                <h1>MIC</h1>
+                <div class="product-meta">
+                    <span class="product-tag">Modulable</span>
+                    <span class="product-meta-item">2 configurations</span>
+                    <span class="product-meta-item">Livraison 4-6 semaines</span>
+                </div>
+                <p>Le MIC redéfinit le mobilier modulable. Pensé comme une unité géométrique parfaite, cet ensemble se compose de deux modules cubiques qui s'adaptent à votre rythme de vie. Tables de chevet indépendantes le soir, elles se rejoignent en un clin d'œil pour devenir le cœur de votre salon.</p>
+
+
+                <div class="novadesk-copy-block">
+                    <h3>Fiche technique</h3>
+                    <ul class="detail-list">
+                        <li><strong>Matériaux :</strong> Noyer massif, finitions huilées ou vernies.</li>
+                        <li><strong>Système :</strong> Emboîtement par tablette latérale (système de crochets bois sécurisés).</li>
+                    <h3>Dimensions par module</h3>
+                    <ul class="detail-list">
+                        <li><strong>Hauteur :</strong> 40 cm</li>
+                        <li><strong>Largeur :</strong> 40 cm</li>
+                        <li><strong>Profondeur :</strong> 40 cm</li>
+                    </ul>
+                </div>
+
+                <div class="detail-actions">
+                    <button class="detail-cta open-quote-modal" data-product="MIC" type="button">
+                        Demander un devis
+                    </button>
+                    <a class="detail-cta detail-cta-secondary" href="/static/img/testprojet.docx" download>
+                        Fiche technique
+                    </a>
+                    <a class="detail-cta detail-cta-secondary" href="/static/pdf/Dimensions_MIC.pdf" download>
+                        Fiche dimension
+                    </a>
+                </div>
+            </div>
+        </section>
+
+        <section class="product-features">
+            <h2>Découvrez MIC</h2>
+            <div class="features-grid">
+                <div class="feature-item">
+                    <img src="/img/image-tablebasse.jpeg" alt="MIC - Configuration 1">
+                    <h3>Configuration 1</h3>
+                    <p>Une configuration épurée pour structurer votre salon et garder un espace fluide.</p>
+                </div>
+                <div class="feature-item">
+                    <img src="/img/img-tablebasse2.jpeg" alt="MIC - Configuration 2">
+                    <h3>Configuration 2</h3>
+                    <p>Une variante pratique qui s'adapte à vos besoins du quotidien.</p>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="site-footer">
+        <div class="container">© 2025 Ydays</div>
+    </footer>
+
+    <section class="contact-banner">
+        <div class="container">
+            <div class="contact-item">Téléphone : <a href="tel:+33000000000">+33 0 00 00 00 00</a></div>
+            <div class="contact-item">Email : <a href="mailto:contact@modulspace.fr">contact@modulspace.fr</a></div>
+            <div class="contact-item">Adresse : 123 Rue Exemple, 75000 Paris</div>
+        </div>
+    </section>
+
+    <div id="quoteModal" class="quote-modal">
+        <div class="quote-modal-content">
+            <div class="quote-modal-header">
+                <h2>Demande de devis - <span id="modalProductTitle"></span></h2>
+                <button class="quote-modal-close">&times;</button>
+            </div>
+            <div class="quote-modal-body">
+                <p>Remplissez le formulaire ci-dessous pour recevoir un devis personnalisé.</p>
+                <form id="quoteForm">
+                    <input type="hidden" id="productName" name="productName" value="MIC">
+
+                    <div class="quote-form-group">
+                        <label for="nom">Nom <span class="quote-form-required">*</span></label>
+                        <input type="text" id="nom" name="nom" required>
+                    </div>
+
+                    <div class="quote-form-group">
+                        <label for="prenom">Prénom <span class="quote-form-required">*</span></label>
+                        <input type="text" id="prenom" name="prenom" required>
+                    </div>
+
+                    <div class="quote-form-group">
+                        <label for="email">Email <span class="quote-form-required">*</span></label>
+                        <input type="email" id="email" name="email" required>
+                    </div>
+
+                    <div class="quote-form-group">
+                        <label for="telephone">Téléphone</label>
+                        <input type="tel" id="telephone" name="telephone">
+                    </div>
+
+                    <button type="submit" class="quote-form-submit">Envoyer la demande</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="/static/js/auth.js"></script>
+    <script src="/static/js/quote.js"></script>
+</body>
+</html>
