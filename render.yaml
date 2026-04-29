@@ -1,0 +1,9 @@
+services:
+  - type: web
+    name: modul-space
+    env: go
+    plan: free
+    buildCommand: go build -o bin/MODUL-SPACE .
+    startCommand: ./bin/MODUL-SPACE
+    healthCheckPath: /health
+    autoDeploy: true

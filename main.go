@@ -32,12 +32,19 @@ var dbDriver string
 func main() {
 	_ = godotenv.Load()
 
+	// Improve log output for runtime debugging
+	log.SetFlags(log.LstdFlags | log.Lshortfile)
+
 	if err := InitDB(); err != nil {
 		log.Printf("⚠️ Erreur DB: %v", err)
 	}
 	defer CloseDB()
 
 	mux := http.NewServeMux()
+	mux.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusOK)
+		w.Write([]byte("ok"))
+	})
 	mux.HandleFunc("/", indexHandler)
 	mux.HandleFunc("/register", registerHandler)
 	mux.HandleFunc("/login", loginHandler)
@@ -1228,7 +1235,7 @@ Cordialement,
 
 	// Si pas de config SMTP, on log juste (mode dev)
 	if smtpUser == "" || smtpPass == "" {
-		fmt.Printf("MODE DEV: Email qui serait envoyé:\n%s\n", message)
+		log.Printf("MODE DEV: Email qui serait envoyé:\n%s\n", message)
 		return nil
 	}
 
