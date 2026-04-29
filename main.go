@@ -14,6 +14,7 @@ import (
 	"path/filepath"
 	"strconv"
 	"strings"
+	"runtime/debug"
 
 	"github.com/joho/godotenv"
 	_ "github.com/go-sql-driver/mysql"
@@ -50,7 +51,23 @@ func main() {
 		port = "8080"
 	}
 	log.Printf("Serveur Modul-space démarré sur http://localhost:%s", port)
-	log.Fatal(http.ListenAndServe(":"+port, mux))
+	// Wrap the mux with a recovery middleware to catch handler panics and log stack traces
+	handler := recoveryMiddleware(mux)
+	log.Fatal(http.ListenAndServe(":"+port, handler))
+}
+
+// recoveryMiddleware récupère les panics dans les handlers HTTP, loggue la stack trace
+// et renvoie une erreur 500 au client au lieu de laisser le process crasher.
+func recoveryMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		defer func() {
+			if rec := recover(); rec != nil {
+				log.Printf("PANIC recovered in handler: %v\n%s", rec, debug.Stack())
+				http.Error(w, "Internal server error", http.StatusInternalServerError)
+			}
+		}()
+		next.ServeHTTP(w, r)
+	})
 }
 
 // InitDB initialise la base de données PostgreSQL (Scalingo) ou MySQL local en fallback
