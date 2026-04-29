@@ -11,9 +11,13 @@ import (
 	"net/smtp"
 	"net/url"
 	"os"
+	"os/signal"
 	"path/filepath"
 	"strconv"
 	"strings"
+	"syscall"
+	"time"
+	"context"
 	"runtime/debug"
 
 	"github.com/joho/godotenv"
@@ -53,7 +57,32 @@ func main() {
 	log.Printf("Serveur Modul-space démarré sur http://localhost:%s", port)
 	// Wrap the mux with a recovery middleware to catch handler panics and log stack traces
 	handler := recoveryMiddleware(mux)
-	log.Fatal(http.ListenAndServe(":"+port, handler))
+
+	srv := &http.Server{
+		Addr:    ":" + port,
+		Handler: handler,
+	}
+
+	// Start server in background
+	go func() {
+		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+			log.Fatalf("Erreur ListenAndServe: %v", err)
+		}
+	}()
+
+	// Wait for termination signal (SIGINT, SIGTERM)
+	sigs := make(chan os.Signal, 1)
+	signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM)
+	sig := <-sigs
+	log.Printf("Signal reçu : %v — démarrage du shutdown gracieux", sig)
+
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+	if err := srv.Shutdown(ctx); err != nil {
+		log.Printf("Erreur lors du shutdown: %v", err)
+	} else {
+		log.Println("Serveur arrêté proprement")
+	}
 }
 
 // recoveryMiddleware récupère les panics dans les handlers HTTP, loggue la stack trace
