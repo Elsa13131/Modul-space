@@ -11,14 +11,9 @@ import (
 	"net/smtp"
 	"net/url"
 	"os"
-	"os/signal"
 	"path/filepath"
 	"strconv"
 	"strings"
-	"syscall"
-	"time"
-	"context"
-	"runtime/debug"
 
 	"github.com/joho/godotenv"
 	_ "github.com/go-sql-driver/mysql"
@@ -32,19 +27,12 @@ var dbDriver string
 func main() {
 	_ = godotenv.Load()
 
-	// Improve log output for runtime debugging
-	log.SetFlags(log.LstdFlags | log.Lshortfile)
-
 	if err := InitDB(); err != nil {
 		log.Printf("⚠️ Erreur DB: %v", err)
 	}
 	defer CloseDB()
 
 	mux := http.NewServeMux()
-	mux.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
-		w.WriteHeader(http.StatusOK)
-		w.Write([]byte("ok"))
-	})
 	mux.HandleFunc("/", indexHandler)
 	mux.HandleFunc("/register", registerHandler)
 	mux.HandleFunc("/login", loginHandler)
@@ -62,48 +50,7 @@ func main() {
 		port = "8080"
 	}
 	log.Printf("Serveur Modul-space démarré sur http://localhost:%s", port)
-	// Wrap the mux with a recovery middleware to catch handler panics and log stack traces
-	handler := recoveryMiddleware(mux)
-
-	srv := &http.Server{
-		Addr:    ":" + port,
-		Handler: handler,
-	}
-
-	// Start server in background
-	go func() {
-		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-			log.Fatalf("Erreur ListenAndServe: %v", err)
-		}
-	}()
-
-	// Wait for termination signal (SIGINT, SIGTERM)
-	sigs := make(chan os.Signal, 1)
-	signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM)
-	sig := <-sigs
-	log.Printf("Signal reçu : %v — démarrage du shutdown gracieux", sig)
-
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-	defer cancel()
-	if err := srv.Shutdown(ctx); err != nil {
-		log.Printf("Erreur lors du shutdown: %v", err)
-	} else {
-		log.Println("Serveur arrêté proprement")
-	}
-}
-
-// recoveryMiddleware récupère les panics dans les handlers HTTP, loggue la stack trace
-// et renvoie une erreur 500 au client au lieu de laisser le process crasher.
-func recoveryMiddleware(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		defer func() {
-			if rec := recover(); rec != nil {
-				log.Printf("PANIC recovered in handler: %v\n%s", rec, debug.Stack())
-				http.Error(w, "Internal server error", http.StatusInternalServerError)
-			}
-		}()
-		next.ServeHTTP(w, r)
-	})
+	log.Fatal(http.ListenAndServe(":"+port, mux))
 }
 
 // InitDB initialise la base de données PostgreSQL (Scalingo) ou MySQL local en fallback
@@ -1235,7 +1182,7 @@ Cordialement,
 
 	// Si pas de config SMTP, on log juste (mode dev)
 	if smtpUser == "" || smtpPass == "" {
-		log.Printf("MODE DEV: Email qui serait envoyé:\n%s\n", message)
+		fmt.Printf("MODE DEV: Email qui serait envoyé:\n%s\n", message)
 		return nil
 	}
 
